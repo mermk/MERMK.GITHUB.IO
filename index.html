@@ -48,7 +48,7 @@
     </div>
 
     <div class="container enc-container" id="encSection" style="display:none;">
-        <h2 style="color:#d4af37; border-bottom:1px solid #d4af37; padding-bottom:5px;">🛡️ تشفير السيرفر النووي</h2>
+        <h2 style="color:#d4af37; border-bottom:1px solid #d4af37; padding-bottom:5px;">🛡️ قسم التشفير</h2>
         <textarea id="textEnc" class="enc-input" rows="3" placeholder="اكتب النص..."></textarea>
         <input type="number" id="keyEnc" class="main-input enc-input num-font" placeholder="Security Key">
         <select id="styleEnc" class="enc-input">
@@ -68,7 +68,7 @@
     </div>
 
     <div class="container dec-container" id="decSection" style="display:none;">
-        <h2 style="color:#e0e0e0; border-bottom:1px solid #e0e0e0; padding-bottom:5px;">🔓 فك تشفير السيرفر</h2>
+        <h2 style="color:#e0e0e0; border-bottom:1px solid #e0e0e0; padding-bottom:5px;">🔓 قسم فك التشفير</h2>
         <textarea id="textDec" class="dec-input" rows="3" placeholder="اكتب الشفرة..."></textarea>
         <input type="number" id="keyDec" class="main-input dec-input num-font" placeholder="Security Key">
         <select id="styleDec" class="dec-input">
@@ -112,7 +112,7 @@
 
             if (!txt || isNaN(key)) return;
 
-            btn.innerText = "جاري الاتصال بالعقل...";
+            btn.innerText = "جاري التشفير...";
             btn.disabled = true;
 
             try {
