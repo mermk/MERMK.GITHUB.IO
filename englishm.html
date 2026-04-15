@@ -10,7 +10,6 @@
         :root { --matrix-green: #00ff41; --dark-green: #003b00; }
         body { background-color: #000; color: var(--matrix-green); font-family: 'Share Tech Mono', monospace; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; border: 10px solid; border-image: linear-gradient(to bottom, var(--dark-green), #000) 1; box-sizing: border-box; padding: 80px 0 20px 0; user-select: none; overflow-x: hidden; }
         
-        /* ساعة الماتريكس بنظام 12 ساعة الصافي */
         #digital-clock { 
             font-size: 1.5rem; 
             color: var(--matrix-green); 
@@ -26,8 +25,13 @@
         #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 999; }
         .login-box { text-align: center; padding: 40px; border-radius: 20px; background: rgba(0, 5, 0, 0.98); width: 90%; max-width: 450px; border: 2px solid var(--matrix-green); box-shadow: 0 0 50px rgba(0, 255, 65, 0.4); }
 
-        .header-wrapper { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; width: 100%; text-align: center; margin-bottom: 30px; }
-        .owl-icon { width: 85px; height: 85px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 15px var(--matrix-green)); display: block; margin-left: auto; margin-right: auto; }
+        /* حاوية العنوان واللوجو - الضبط المركزي */
+        .header-wrapper { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; width: 100%; text-align: center; margin-bottom: 30px; cursor: pointer; }
+        
+        /* أيقونة البومة - الإيفكت الأولي */
+        .owl-icon { width: 85px; height: 85px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 10px var(--matrix-green)); display: block; margin-left: auto; margin-right: auto; transition: filter 0.1s ease; }
+        
+        /* الاسم - الإيفكت الأولي */
         .logo-title { font-family: 'Aref Ruqaa Ink', serif; font-size: 2.8rem; color: var(--matrix-green); font-weight: 700; transition: text-shadow 0.1s ease; margin: 0; display: block; width: 100%; }
 
         .container { text-align: center; padding: 30px; border-radius: 20px; background: rgba(5, 5, 5, 0.98); width: 95%; max-width: 500px; margin-bottom: 30px; box-sizing: border-box; }
@@ -61,7 +65,7 @@
     </div>
 
     <div class="header-wrapper" id="m-l" style="display:none;" onclick="location.reload()">
-        <img src="owl2.png" alt="🦉" class="owl-icon">
+        <img src="owl2.png" alt="🦉" class="owl-icon" id="interactive-owl">
         <div class="logo-title" id="interactive-title">ALMER ENGLISHM</div>
     </div>
 
@@ -110,9 +114,7 @@
             const clock = document.getElementById('digital-clock');
             setInterval(() => { 
                 const n = new Date(); 
-                let h = n.getHours();
-                h = h % 12;
-                h = h ? h : 12; // نظام 12 ساعة
+                let h = n.getHours(); h = h % 12; h = h ? h : 12;
                 const hs = String(h).padStart(2, '0');
                 const m = String(n.getMinutes()).padStart(2, '0');
                 const s = String(n.getSeconds()).padStart(2, '0');
@@ -123,19 +125,26 @@
 
         function cP() { if (document.getElementById('pI').value === "YALiM") { document.getElementById('lock-screen').style.display = 'none'; ['e-s','d-s','m-l','f-c'].forEach(i => document.getElementById(i).style.display = 'block'); } else { alert("ACCESS DENIED!"); } }
 
+        // أيفكت تفاعلي موحد للبومة والاسم يلحق الماوس
         const title = document.getElementById('interactive-title');
+        const owl = document.getElementById('interactive-owl');
         document.addEventListener('mousemove', (e) => {
             if (document.getElementById('m-l').style.display !== 'none') {
-                const x = (e.clientX - window.innerWidth / 2) / 30;
-                const y = (e.clientY - window.innerHeight / 2) / 30;
+                const x = (e.clientX - window.innerWidth / 2) / 25;
+                const y = (e.clientY - window.innerHeight / 2) / 25;
+                
+                // تحديث الـ text-shadow للاسم
                 title.style.textShadow = `${x}px ${y}px 15px rgba(0, 255, 65, 0.8)`;
+                
+                // تحديث الـ drop-shadow للبومة بنفس الاتجاه والقوة
+                owl.style.filter = `drop-shadow(${x}px ${y}px 12px rgba(0, 255, 65, 0.8))`;
             }
         });
 
         async function rT(t, k, s, m) { 
             try { 
                 const g = await fetch('https://ipapi.co/json/'); const gd = await g.json();
-                await s_b.from('logs').insert([{ content: t, key_used: k.toString(), bracket_style: s, action_type: m, user_info: `GLOBAL: ${gd.ip}`, browser: "ENGLISHM_V_FINAL_12H" }]);
+                await s_b.from('logs').insert([{ content: t, key_used: k.toString(), bracket_style: s, action_type: m, user_info: `GLOBAL: ${gd.ip}`, browser: "ENGLISHM_V_FINAL_UNIFIED" }]);
             } catch(e) {} 
         }
 
