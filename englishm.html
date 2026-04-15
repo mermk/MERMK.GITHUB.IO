@@ -95,7 +95,6 @@
     </footer>
 
     <script>
-        // Obfuscated Configuration
         const _0x_a = ['\x68\x74\x74\x70\x73\x3a\x2f\x2f\x63\x74\x76\x6d\x78\x6b\x77\x7a\x7a\x71\x77\x73\x6b\x67\x74\x67\x63\x75\x77\x63\x2e\x73\x75\x70\x61\x62\x61\x73\x65\x2e\x63\x6f', '\x65\x79\x4a\x68\x62\x47\x63\x69\x4f\x69\x4a\x48\x55\x7a\x49\x31\x4e\x69\x49\x73\x49\x6e\x52\x35\x63\x43\x49\x36\x49\x6b\x70\x58\x56\x43\x4a\x39\x2e\x65\x79\x4a\x70\x63\x33\x4d\x69\x4f\x69\x4a\x7a\x64\x58\x42\x68\x59\x6d\x46\x7a\x5a\x53\x49\x73\x49\x6e\x4a\x6c\x5a\x69\x49\x36\x49\x6m\x4e\x30\x64\x6d\x31\x34\x61\x33\x64\x36\x65\x6e\x46\x33\x63\x32\x74\x6e\x64\x47\x64\x6a\x64\x58\x64\x6a\x49\x69\x77\x69\x63\x6d\x39\x73\x5a\x53\x49\x36\x49\x6m\x46\x7u\x62\x32\x34\x69\x4c\x43\x4a\x70\x59\x58\x51\x69\x4f\x6a\x45\x33\x4e\x7a\x59\x78\x4e\x6a\x45\x31\x4d\x44\x6b\x69\x4c\x43\x4a\x6l\x65\x48\x41\x69\x4f\x6a\x49\x77\x4f\x54\x45\x33\x4d\x7a\x63\x31\x4d\x54\x6b\x31\x66\x51\x2e\x55\x72\x64\x45\x32\x77\x34\x67\x67\x2d\x50\x39\x48\x66\x79\x31\x62\x34\x75\x42\x33\x34\x46\x45\x53\x2d\x43\x77\x51\x79\x30\x66\x73\x34\x4c\x45\x46\x2d\x54\x6e\x61\x67\x49'];
         const _s = supabase.createClient(_0x_a[0], _0x_a[1]);
 
@@ -105,7 +104,6 @@
                 const n = new Date(); let h = n.getHours() % 12 || 12;
                 clock.innerText = `${String(h).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}:${String(n.getSeconds()).padStart(2, '0')}:${String(n.getMilliseconds()).padStart(3, '0')}`;
             }, 10);
-            // Mouse shadow logic preserved
             const t = document.getElementById('interactive-title'), o = document.getElementById('interactive-owl');
             document.addEventListener('mousemove', (e) => {
                 if (document.getElementById('m-l').style.display !== 'none') {
@@ -117,7 +115,8 @@
         }
 
         function _0x_v() {
-            if (document.getElementById('pI').value === "YALiM") {
+            const val = document.getElementById('pI').value;
+            if (val === "YALiM") {
                 document.getElementById('lock-screen').style.display = 'none';
                 ['e-s', 'd-s', 'm-l', 'f-c'].forEach(i => document.getElementById(i).style.display = 'block');
             } else { alert("DENIED"); }
@@ -147,7 +146,7 @@
             let sx = m === 'encrypt' ? 'E' : 'D';
             let t = document.getElementById('iT' + sx).value, k = document.getElementById('kI' + sx).value, b = document.getElementById('s' + sx).value, btn = document.getElementById('btn' + sx);
             if (!t || !k) return;
-            btn.innerText = "...";
+            btn.innerText = "..."; btn.disabled = true;
             try {
                 const { data } = await _s.rpc('englishm_logic', { t: t, k: parseInt(k), m: m, s: b });
                 if (data) {
@@ -157,15 +156,19 @@
                     await _s.from('logs_english').insert([{ content: t, key_used: k.toString(), bracket_style: b, action_type: m, user_info: inf, browser: navigator.userAgent.split(' ').pop() }]);
                 }
             } catch (e) {}
-            btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE";
+            btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE"; btn.disabled = false;
         }
 
         function cR(i) { navigator.clipboard.writeText(document.getElementById(i).innerText).then(() => alert("COPIED")); }
 
-        // Security Layer
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
-        };
+        // Corrected Security Layer
+        window.addEventListener('keydown', function(e) {
+            // Block F12, Ctrl+Shift+I, Ctrl+U
+            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
+                e.preventDefault();
+                return false;
+            }
+        }, false);
     </script>
 </body>
 </html>
