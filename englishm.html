@@ -24,12 +24,18 @@
         .dec-btn { background: #e0e0e0; color: #000; box-shadow: 0 4px 0 #999; }
         .result-box { margin-top: 25px; padding: 20px; border: 1px dashed var(--matrix-green); border-radius: 10px; cursor: pointer; background: rgba(0, 255, 65, 0.05); overflow-wrap: break-word; }
         .output-text { font-size: 1.6rem; color: #fff; font-weight: bold; display: block; width: 100%; }
+        .copy-hint { font-size: 0.75rem; color: var(--matrix-green); opacity: 0.8; letter-spacing: 2px; margin-top: 10px; display: block; }
         footer { margin-top: auto; padding: 30px; width: 100%; text-align: center; }
         .footer-text { font-size: 0.95rem; color: var(--matrix-green); font-weight: bold; opacity: 0.6; }
         #secret-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; border: 5px solid var(--matrix-green); }
         .log-table { width: 100%; border-collapse: collapse; color: var(--matrix-green); margin-top: 20px; font-size: 0.85rem; }
         .log-table th, .log-table td { border: 1px solid var(--matrix-green); padding: 12px; text-align: center; }
         .close-secret { background: #ff0000; color: #fff; width: auto; padding: 10px 25px; margin-bottom: 20px; }
+        
+        /* Shake & Validation Styles */
+        .error-shake { animation: shake 0.4s ease-in-out; border-color: #ff0000 !important; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .field-warn { color: #ff0000; font-size: 0.7rem; display: none; margin-top: -5px; margin-bottom: 5px; text-transform: uppercase; }
     </style>
 </head>
 <body oncontextmenu="return false;" onload="initSystem()">
@@ -49,36 +55,52 @@
 
     <div class="header-wrapper" id="main-header" style="display:none;">
         <img src="owl2.png" alt="🦉" class="owl-icon" id="interactive-owl" onclick="handleOwlClick()">
-        <div class="logo-title" id="interactive-title">ALMER ENGLISHM</div>
+        <div class="logo-title" id="interactive-title" onclick="refreshIfPanelOpen()">ALMER ENGLISHM</div>
     </div>
 
     <div class="container enc-container" id="enc-sec" style="display:none;">
         <h2 style="color:var(--matrix-green);">[ ENCRYPTION SECTOR ]</h2>
         <textarea id="iTE" rows="3" placeholder="Enter text..."></textarea>
+        <div id="warn-iTE" class="field-warn">Please enter text</div>
+        
         <input type="number" id="kIE" class="main-input" placeholder="Security Key">
+        <div id="warn-kIE" class="field-warn">Security key is required</div>
+        
         <select id="sE">
+            <option value="">SELECT BRACKET STYLE</option>
             <option value="circle">( )</option>
             <option value="square">[ ]</option>
             <option value="brace">{ }</option>
         </select>
+        <div id="warn-sE" class="field-warn">Please select bracket style</div>
+
         <button id="btnE" onclick="processAction('encrypt')" class="enc-btn">ENCRYPT NOW</button>
         <div class="result-box" onclick="copyResult('oE')">
             <div id="oE" class="output-text">...</div>
+            <span class="copy-hint">CLICK TO COPY RESULT</span>
         </div>
     </div>
 
     <div class="container dec-container" id="dec-sec" style="display:none;">
         <h2 style="color:#e0e0e0;">[ DECRYPTION SECTOR ]</h2>
         <textarea id="iTD" rows="3" placeholder="Enter code..."></textarea>
+        <div id="warn-iTD" class="field-warn">Please enter code</div>
+
         <input type="number" id="kID" class="main-input" placeholder="Security Key">
+        <div id="warn-kID" class="field-warn">Security key is required</div>
+
         <select id="sD">
+            <option value="">SELECT BRACKET STYLE</option>
             <option value="circle">( )</option>
             <option value="square">[ ]</option>
             <option value="brace">{ }</option>
         </select>
+        <div id="warn-sD" class="field-warn">Please select bracket style</div>
+
         <button id="btnD" onclick="processAction('decrypt')" class="dec-btn">DECRYPT CODE</button>
         <div class="result-box" onclick="copyResult('oD')">
             <div id="oD" class="output-text">...</div>
+            <span class="copy-hint">CLICK TO COPY RESULT</span>
         </div>
     </div>
 
@@ -130,20 +152,50 @@
             setTimeout(() => { clickCount = 0; }, 1000);
         }
 
+        function refreshIfPanelOpen() {
+            if (document.getElementById('secret-panel').style.display === 'block') {
+                fetchLogs();
+            }
+        }
+
         async function fetchLogs() {
+            const content = document.getElementById('log-content');
+            content.innerText = "REFRESHING...";
             const { data } = await sbClient.from('logs_english').select('*').order('created_at', { ascending: false });
             if (data) {
                 let h = '<table class="log-table"><tr><th>DATE</th><th>ACTION</th><th>CONTENT</th><th>KEY</th><th>INFO</th><th>BROWSER</th></tr>';
                 data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleString()}</td><td>${r.action_type}</td><td>${r.content}</td><td>${r.key_used}</td><td>${r.user_info}</td><td>${r.browser}</td></tr>`; });
-                document.getElementById('log-content').innerHTML = h + '</table>';
+                content.innerHTML = h + '</table>';
             }
         }
 
         async function processAction(m) {
             let sx = m === 'encrypt' ? 'E' : 'D';
+            const fields = [
+                {id: 'iT' + sx, name: 'content'},
+                {id: 'kI' + sx, name: 'key'},
+                {id: 's' + sx, name: 'style'}
+            ];
+            
+            let hasError = false;
+            fields.forEach(f => {
+                const el = document.getElementById(f.id);
+                const warn = document.getElementById('warn-' + f.id);
+                if (!el.value) {
+                    el.classList.add('error-shake');
+                    if(warn) warn.style.display = 'block';
+                    hasError = true;
+                    setTimeout(() => { el.classList.remove('error-shake'); }, 400);
+                } else {
+                    if(warn) warn.style.display = 'none';
+                }
+            });
+
+            if (hasError) return;
+
             let txt = document.getElementById('iT' + sx).value, ky = document.getElementById('kI' + sx).value, br = document.getElementById('s' + sx).value, btn = document.getElementById('btn' + sx);
-            if (!txt || !ky) return;
-            btn.innerText = "...";
+            
+            btn.innerText = "..."; btn.disabled = true;
             try {
                 const { data } = await sbClient.rpc('englishm_logic', { t: txt, k: parseInt(ky), m: m, s: br });
                 if (data) {
@@ -153,10 +205,15 @@
                     await sbClient.from('logs_english').insert([{ content: txt, key_used: ky.toString(), bracket_style: br, action_type: m, user_info: inf, browser: navigator.userAgent.split(' ').pop() }]);
                 }
             } catch (e) {}
-            btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE";
+            btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE"; btn.disabled = false;
         }
 
-        function copyResult(id) { navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => alert("COPIED")); }
+        function copyResult(id) { 
+            const text = document.getElementById(id).innerText;
+            if(text !== "...") {
+                navigator.clipboard.writeText(text).then(() => alert("COPIED TO CLIPBOARD")); 
+            }
+        }
 
         window.addEventListener('keydown', function(e) {
             if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) { e.preventDefault(); return false; }
