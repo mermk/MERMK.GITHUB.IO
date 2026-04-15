@@ -25,7 +25,8 @@
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         .enc-btn { background: #d4af37; color: #000; box-shadow: 0 4px 0 #8a6d1c; }
         .dec-btn { background: #e0e0e0; color: #000; box-shadow: 0 4px 0 #999; }
-        .result-box { margin-top: 25px; padding: 20px; border: 1px dashed #555; border-radius: 10px; cursor: pointer; background: rgba(255, 255, 255, 0.02); overflow-wrap: break-word; }
+        .result-box { margin-top: 25px; padding: 20px; border: 1px dashed #555; border-radius: 10px; cursor: pointer; background: rgba(255, 255, 255, 0.02); overflow-wrap: break-word; position: relative; }
+        .copy-hint { font-size: 0.8rem; color: #888; margin-top: 8px; display: block; }
         .output-text { font-size: 1.6rem; color: #fff; font-weight: bold; display: block; width: 100%; }
         footer { margin-top: auto; padding: 30px; width: 100%; display: flex; flex-direction: column; align-items: center; }
         .footer-text { font-size: 0.95rem; color: #555; line-height: 1.6; text-align: center; font-weight: bold; }
@@ -59,12 +60,13 @@
         <button id="btnE" onclick="callServer('encrypt')" class="enc-btn">تشفير الآن</button>
         <div class="result-box" onclick="copyRes('outEnc')">
             <div id="outEnc" class="output-text">...</div>
+            <span class="copy-hint">اضغط للنسخ</span>
         </div>
     </div>
 
     <div class="poetry-line" id="poetry" style="display:none;">
-        وَقَدْ شَتَّتِ الْأَهْوَاءُ كُلٌّ وَدِينُهُ .. وَلَا زِلْتُ شِيعِيًّا عَلَى دِينِ جَدَّتِي<br>
-        أُوَالِي عَلِيًّا لَسْتُ أَعْبَأُ بَعْدَهَا .. عَلَى أَيِّ جَنْبَيْهَا الْبِلَادُ اسْتَقَرَّتِ
+        وَقَدْ شَتَّتِ الْأَهْوَاءُ كُلٌّ وَدِينُهُ .. وَلَا زِلْتُ شِيعِيًّا عَلَى دِينِ جَدَّتِي<br>
+        أُوَالِي عَلِيًّا لَسْتُ أَعْبَأُ بَعْدَهَا .. عَلَى أَيِّ جَنْبَيْهَا الْبِلَادُ اسْتَقَرَّتِ
     </div>
 
     <div class="container dec-container" id="decSection" style="display:none;">
@@ -79,6 +81,7 @@
         <button id="btnD" onclick="callServer('decrypt')" class="dec-btn">فك التشفير</button>
         <div class="result-box" onclick="copyRes('outDec')">
             <div id="outDec" class="output-text">...</div>
+            <span class="copy-hint">اضغط للنسخ</span>
         </div>
     </div>
 
@@ -87,7 +90,6 @@
     </footer>
 
     <script>
-        // إعدادات الربط بالسيرفر
         const SB_URL = "https://ctvmxkwzzqwskgtgcuwc.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dm14a3d6enF3c2tndGdjdXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjE1MDksImV4cCI6MjA5MTczNzUwOX0.UrdE2w4gg-P9Hfy1b4uB34FES-CwQy0fs4LEF-TnagI";
         const sbClient = supabase.createClient(SB_URL, SB_KEY);
@@ -102,21 +104,21 @@
             } else { alert("غلط يا ملك!"); } 
         }
 
-        // دالة استدعاء العقل النووي من السيرفر
         async function callServer(mode) {
-            const sfx = mode === 'encrypt' ? 'Enc' : 'Dec';
+            const isEnc = mode === 'encrypt';
+            const sfx = isEnc ? 'Enc' : 'Dec';
             const txt = document.getElementById('text' + sfx).value;
             const key = parseInt(document.getElementById('key' + sfx).value);
             const style = document.getElementById('style' + sfx).value;
-            const btn = document.getElementById('btn' + (mode === 'encrypt' ? 'E' : 'D'));
+            const btn = document.getElementById('btn' + (isEnc ? 'E' : 'D'));
 
             if (!txt || isNaN(key)) return;
 
-            btn.innerText = "جاري التشفير...";
+            // تحديث نص الزر حسب الحالة
+            btn.innerText = isEnc ? "يتم التشفير الآن..." : "يتم فك التشفير الآن...";
             btn.disabled = true;
 
             try {
-                // استدعاء الـ Function اللي زرعته بالسيرفر
                 const { data, error } = await sbClient.rpc('al_mir_core_v3', {
                     p_text: txt,
                     p_key: key,
@@ -131,14 +133,13 @@
                 alert("السيرفر ما جاوب.. تأكد من النت!");
                 console.error(err);
             } finally {
-                btn.innerText = mode === 'encrypt' ? "تشفير الآن" : "فك التشفير";
+                btn.innerText = isEnc ? "تشفير الآن" : "فك التشفير";
                 btn.disabled = false;
             }
         }
 
         function copyRes(id) { const t = document.getElementById(id).innerText; if (t !== "...") { navigator.clipboard.writeText(t).then(() => alert("تم النسخ! ✅")); } }
 
-        // منع الـ Inspect للنسخة العامة أيضاً
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = e => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false; };
     </script>
