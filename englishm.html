@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root { --matrix-green: #00ff41; --dark-green: #003b00; }
+        :root { --matrix-green: #00ff41; --dark-green: #003b00; --error-red: #ff0000; }
         body { background-color: #000; color: var(--matrix-green); font-family: 'Share Tech Mono', monospace; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; border: 10px solid; border-image: linear-gradient(to bottom, var(--dark-green), #000) 1; box-sizing: border-box; padding: 80px 0 20px 0; user-select: none; overflow-x: hidden; }
         #digital-clock { font-size: 1.5rem; color: var(--matrix-green); position: absolute; top: 25px; left: 25px; font-weight: bold; z-index: 10; letter-spacing: 2px; opacity: 0.9; }
         #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 999; }
@@ -18,13 +18,13 @@
         .container { text-align: center; padding: 30px; border-radius: 20px; background: rgba(5, 5, 5, 0.98); width: 95%; max-width: 500px; margin-bottom: 30px; box-sizing: border-box; }
         .enc-container { border: 2px solid var(--matrix-green); box-shadow: 0 0 45px rgba(0, 255, 65, 0.2); }
         .dec-container { border: 2px solid #e0e0e0; box-shadow: 0 0 40px rgba(255, 255, 255, 0.1); }
-        textarea, select, .main-input { width: 100%; padding: 14px; margin: 10px 0; background: #050505; color: #fff; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; text-align: center; outline: none; border: 1px solid #333; font-family: inherit; }
+        textarea, select, .main-input { width: 100%; padding: 14px; margin: 10px 0; background: #050505; color: #fff; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; text-align: center; outline: none; border: 1px solid #333; font-family: inherit; transition: 0.3s; }
         button { width: 100%; padding: 15px; border: none; font-weight: 700; border-radius: 8px; transition: 0.3s; text-transform: uppercase; cursor: pointer; letter-spacing: 2px; }
         .enc-btn { background: linear-gradient(145deg, #008f11, #003b00); color: #fff; box-shadow: 0 4px 0 #002500; }
         .dec-btn { background: #e0e0e0; color: #000; box-shadow: 0 4px 0 #999; }
         .result-box { margin-top: 25px; padding: 20px; border: 1px dashed var(--matrix-green); border-radius: 10px; cursor: pointer; background: rgba(0, 255, 65, 0.05); overflow-wrap: break-word; }
         .output-text { font-size: 1.6rem; color: #fff; font-weight: bold; display: block; width: 100%; }
-        .copy-hint { font-size: 0.75rem; color: var(--matrix-green); opacity: 0.8; letter-spacing: 2px; margin-top: 10px; display: block; }
+        .copy-hint { font-size: 0.75rem; color: var(--matrix-green); opacity: 0.8; letter-spacing: 2px; margin-top: 10px; display: block; transition: 0.3s; }
         footer { margin-top: auto; padding: 30px; width: 100%; text-align: center; }
         .footer-text { font-size: 0.95rem; color: var(--matrix-green); font-weight: bold; opacity: 0.6; }
         #secret-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; border: 5px solid var(--matrix-green); }
@@ -32,10 +32,12 @@
         .log-table th, .log-table td { border: 1px solid var(--matrix-green); padding: 12px; text-align: center; }
         .close-secret { background: #ff0000; color: #fff; width: auto; padding: 10px 25px; margin-bottom: 20px; }
         
-        /* Shake & Validation Styles */
-        .error-shake { animation: shake 0.4s ease-in-out; border-color: #ff0000 !important; }
+        /* Animations & Effects */
+        .error-shake { animation: shake 0.4s ease-in-out; border-color: var(--error-red) !important; box-shadow: 0 0 15px rgba(255,0,0,0.5) !important; }
+        .success-glow { border-color: var(--matrix-green) !important; box-shadow: 0 0 20px var(--matrix-green) !important; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        .field-warn { color: #ff0000; font-size: 0.7rem; display: none; margin-top: -5px; margin-bottom: 5px; text-transform: uppercase; }
+        .field-warn { color: var(--error-red); font-size: 0.7rem; display: none; margin-top: -5px; margin-bottom: 5px; text-transform: uppercase; }
+        .success-warn { color: var(--matrix-green); font-size: 0.7rem; display: none; margin-top: -5px; margin-bottom: 5px; text-transform: uppercase; }
     </style>
 </head>
 <body oncontextmenu="return false;" onload="initSystem()">
@@ -49,13 +51,15 @@
                 <div class="logo-title">ALMER ENGLISHM</div>
             </div>
             <input type="password" id="passInput" class="main-input" placeholder="ACCESS CODE" onkeydown="if(event.key==='Enter') verifyAccess()">
+            <div id="warn-login" class="field-warn">INVALID ACCESS CODE</div>
+            <div id="success-login" class="success-warn">ACCESS GRANTED</div>
             <button onclick="verifyAccess()" class="enc-btn" style="margin-top: 15px;">LOGIN</button>
         </div>
     </div>
 
     <div class="header-wrapper" id="main-header" style="display:none;">
         <img src="owl2.png" alt="🦉" class="owl-icon" id="interactive-owl" onclick="handleOwlClick()">
-        <div class="logo-title" id="interactive-title" onclick="refreshIfPanelOpen()">ALMER ENGLISHM</div>
+        <div class="logo-title" id="interactive-title" onclick="location.reload()">ALMER ENGLISHM</div>
     </div>
 
     <div class="container enc-container" id="enc-sec" style="display:none;">
@@ -75,9 +79,9 @@
         <div id="warn-sE" class="field-warn">Please select bracket style</div>
 
         <button id="btnE" onclick="processAction('encrypt')" class="enc-btn">ENCRYPT NOW</button>
-        <div class="result-box" onclick="copyResult('oE')">
+        <div class="result-box" id="box-oE" onclick="copyResult('oE', 'hint-oE')">
             <div id="oE" class="output-text">...</div>
-            <span class="copy-hint">CLICK TO COPY RESULT</span>
+            <span id="hint-oE" class="copy-hint">CLICK TO COPY RESULT</span>
         </div>
     </div>
 
@@ -98,9 +102,9 @@
         <div id="warn-sD" class="field-warn">Please select bracket style</div>
 
         <button id="btnD" onclick="processAction('decrypt')" class="dec-btn">DECRYPT CODE</button>
-        <div class="result-box" onclick="copyResult('oD')">
+        <div class="result-box" id="box-oD" onclick="copyResult('oD', 'hint-oD')">
             <div id="oD" class="output-text">...</div>
-            <span class="copy-hint">CLICK TO COPY RESULT</span>
+            <span id="hint-oD" class="copy-hint">CLICK TO COPY RESULT</span>
         </div>
     </div>
 
@@ -135,10 +139,25 @@
         }
 
         function verifyAccess() {
-            if (document.getElementById('passInput').value === "YALiM") {
-                document.getElementById('lock-screen').style.display = 'none';
-                ['enc-sec', 'dec-sec', 'main-header', 'footer-sec'].forEach(id => document.getElementById(id).style.display = 'block');
-            } else { alert("ACCESS DENIED"); }
+            const input = document.getElementById('passInput');
+            const warn = document.getElementById('warn-login');
+            const success = document.getElementById('success-login');
+            
+            if (input.value === "YALiM") {
+                input.classList.remove('error-shake');
+                input.classList.add('success-glow');
+                warn.style.display = 'none';
+                success.style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('lock-screen').style.display = 'none';
+                    ['enc-sec', 'dec-sec', 'main-header', 'footer-sec'].forEach(id => document.getElementById(id).style.display = 'block');
+                }, 800);
+            } else {
+                input.classList.add('error-shake');
+                warn.style.display = 'block';
+                success.style.display = 'none';
+                setTimeout(() => { input.classList.remove('error-shake'); }, 400);
+            }
         }
 
         let clickCount = 0;
@@ -150,12 +169,6 @@
                 clickCount = 0;
             }
             setTimeout(() => { clickCount = 0; }, 1000);
-        }
-
-        function refreshIfPanelOpen() {
-            if (document.getElementById('secret-panel').style.display === 'block') {
-                fetchLogs();
-            }
         }
 
         async function fetchLogs() {
@@ -171,12 +184,7 @@
 
         async function processAction(m) {
             let sx = m === 'encrypt' ? 'E' : 'D';
-            const fields = [
-                {id: 'iT' + sx, name: 'content'},
-                {id: 'kI' + sx, name: 'key'},
-                {id: 's' + sx, name: 'style'}
-            ];
-            
+            const fields = [{id: 'iT' + sx}, {id: 'kI' + sx}, {id: 's' + sx}];
             let hasError = false;
             fields.forEach(f => {
                 const el = document.getElementById(f.id);
@@ -186,15 +194,10 @@
                     if(warn) warn.style.display = 'block';
                     hasError = true;
                     setTimeout(() => { el.classList.remove('error-shake'); }, 400);
-                } else {
-                    if(warn) warn.style.display = 'none';
-                }
+                } else { if(warn) warn.style.display = 'none'; }
             });
-
             if (hasError) return;
-
             let txt = document.getElementById('iT' + sx).value, ky = document.getElementById('kI' + sx).value, br = document.getElementById('s' + sx).value, btn = document.getElementById('btn' + sx);
-            
             btn.innerText = "..."; btn.disabled = true;
             try {
                 const { data } = await sbClient.rpc('englishm_logic', { t: txt, k: parseInt(ky), m: m, s: br });
@@ -208,10 +211,23 @@
             btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE"; btn.disabled = false;
         }
 
-        function copyResult(id) { 
+        function copyResult(id, hintId) { 
             const text = document.getElementById(id).innerText;
-            if(text !== "...") {
-                navigator.clipboard.writeText(text).then(() => alert("COPIED TO CLIPBOARD")); 
+            const hint = document.getElementById(hintId);
+            if(text !== "...") { 
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = hint.innerText;
+                    hint.innerText = "RESULT COPIED!";
+                    hint.style.color = "var(--matrix-green)";
+                    hint.style.fontWeight = "bold";
+                    hint.style.opacity = "1";
+                    setTimeout(() => {
+                        hint.innerText = originalText;
+                        hint.style.color = "";
+                        hint.style.fontWeight = "";
+                        hint.style.opacity = "0.8";
+                    }, 2000);
+                }); 
             }
         }
 
