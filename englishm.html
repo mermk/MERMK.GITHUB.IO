@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AL-MIR | ENGLISHM SYSTEM</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@700&family=Cairo:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #000; color: #00ff41; font-family: 'Share Tech Mono', monospace; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; border: 10px solid; border-image: linear-gradient(to bottom, #003b00, #000) 1; box-shadow: 0 0 60px rgba(0, 255, 65, 0.3); box-sizing: border-box; padding: 20px 0; user-select: none; }
+        #digital-clock { font-size: 1.3rem; color: #00ff41; position: absolute; top: 25px; left: 25px; text-shadow: 0 0 10px rgba(0, 255, 65, 0.5); font-weight: bold; }
+        #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 999; }
+        .login-box { text-align: center; padding: 40px; border-radius: 20px; background: rgba(0, 5, 0, 0.98); width: 90%; max-width: 450px; border: 2px solid #00ff41; box-shadow: 0 0 50px rgba(0, 255, 65, 0.4); }
+        .container { text-align: center; padding: 30px; border-radius: 20px; background: rgba(5, 5, 5, 0.98); width: 95%; max-width: 500px; margin-bottom: 30px; box-sizing: border-box; }
+        .enc-container { border: 2px solid #00ff41; box-shadow: 0 0 45px rgba(0, 255, 65, 0.2); }
+        .enc-input { border: 1px solid #00ff41; color: #00ff41 !important; background: #000; }
+        .enc-btn { background: linear-gradient(145deg, #008f11, #003b00); color: #fff; box-shadow: 0 4px 0 #002500; cursor: pointer; }
+        .dec-container { border: 2px solid #e0e0e0; box-shadow: 0 0 40px rgba(255, 255, 255, 0.1); }
+        .dec-input { border: 1px solid #e0e0e0; color: #fff !important; background: #000; }
+        .dec-btn { background: #e0e0e0; color: #000; box-shadow: 0 4px 0 #999; cursor: pointer; }
+        .logo-title { font-family: 'Aref Ruqaa Ink', serif; font-size: 2.8rem; margin-bottom: 25px; color: #ff0000; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 15px; font-weight: 700; }
+        .owl-icon { width: 55px; height: 55px; object-fit: contain; }
+        textarea, select, .main-input { width: 100%; padding: 14px; margin: 10px 0; background: #050505; color: #fff; border-radius: 8px; font-size: 1.1rem; box-sizing: border-box; text-align: center; outline: none; border: 1px solid #333; }
+        button { width: 100%; padding: 15px; border: none; font-weight: 700; border-radius: 8px; transition: 0.3s; text-transform: uppercase; letter-spacing: 2px; }
+        .result-box { margin-top: 25px; padding: 20px; border: 1px dashed #00ff41; border-radius: 10px; cursor: pointer; background: rgba(0, 255, 65, 0.05); overflow-wrap: break-word; }
+        .copy-hint { font-size: 0.8rem; color: #00ff41; margin-top: 8px; display: block; opacity: 0.7; }
+        .output-text { font-size: 1.6rem; color: #fff; font-weight: bold; display: block; width: 100%; }
+        footer { margin-top: auto; padding: 30px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .footer-text { font-size: 0.95rem; color: #00ff41; line-height: 1.6; text-align: center; font-weight: bold; opacity: 0.6; }
+    </style>
+</head>
+<body onload="uC()">
+
+    <div id="digital-clock">00:00:00 AM</div>
+
+    <div id="lock-screen">
+        <div class="login-box">
+            <h1 class="logo-title" style="font-size: 2.2rem;">ALMER • ENGLISHM <img src="owl2.png" alt="🦉" class="owl-icon"></h1>
+            <input type="password" id="pI" class="main-input enc-input" placeholder="ACCESS CODE" onkeypress="if(event.key==='Enter') cP()">
+            <button onclick="cP()" class="enc-btn" style="margin-top: 15px;">LOGIN</button>
+        </div>
+    </div>
+
+    <div class="logo-title" id="m-l" style="display:none; margin-top: 15px;">
+        ALMER • ENGLISHM <img src="owl2.png" alt="🦉" class="owl-icon" onclick="location.reload()">
+    </div>
+
+    <div class="container enc-container" id="e-s" style="display:none;">
+        <h2 style="color:#00ff41;">[ ENCRYPTION SECTOR ]</h2>
+        <textarea id="iTE" class="enc-input" rows="3" placeholder="Enter text..."></textarea>
+        <input type="number" id="kIE" class="main-input enc-input" placeholder="Security Key">
+        <select id="sE" class="enc-input">
+            <option value="circle">( )</option>
+            <option value="square">[ ]</option>
+            <option value="brace">{ }</option>
+        </select>
+        <button id="btnE" onclick="pA('encrypt')" class="enc-btn">ENCRYPT NOW</button>
+        <div class="result-box" onclick="cR('oE')">
+            <div id="oE" class="output-text">...</div>
+            <span class="copy-hint">CLICK TO COPY</span>
+        </div>
+    </div>
+
+    <div class="container dec-container" id="d-s" style="display:none;">
+        <h2 style="color:#e0e0e0;">[ DECRYPTION SECTOR ]</h2>
+        <textarea id="iTD" class="dec-input" rows="3" placeholder="Enter code..."></textarea>
+        <input type="number" id="kID" class="main-input dec-input" placeholder="Security Key">
+        <select id="sD" class="dec-input">
+            <option value="circle">( )</option>
+            <option value="square">[ ]</option>
+            <option value="brace">{ }</option>
+        </select>
+        <button id="btnD" onclick="pA('decrypt')" class="dec-btn">DECRYPT CODE</button>
+        <div class="result-box" onclick="cR('oD')">
+            <div id="oD" class="output-text">...</div>
+            <span class="copy-hint">CLICK TO COPY</span>
+        </div>
+    </div>
+
+    <footer id="f-c" style="display:none;">
+        <div class="footer-text">ALL RIGHTS RESERVED<br>MOHAMMED AL-MER © 2026</div>
+    </footer>
+
+    <script>
+        const _u = "https://ctvmxkwzzqwskgtgcuwc.supabase.co";
+        const _k = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dm14a3d6enF3c2tndGdjdXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjE1MDksImV4cCI6MjA5MTczNzUwOX0.UrdE2w4gg-P9Hfy1b4uB34FES-CwQy0fs4LEF-TnagI";
+        const s_b = supabase.createClient(_u, _k);
+
+        function uC() { setInterval(() => { const n = new Date(); document.getElementById('digital-clock').innerText = n.toLocaleTimeString(); }, 1000); }
+
+        function cP() { if (document.getElementById('pI').value === "1212") { document.getElementById('lock-screen').style.display = 'none'; ['e-s','d-s','m-l','f-c'].forEach(i => document.getElementById(i).style.display = 'block'); } else { alert("ACCESS DENIED!"); } }
+
+        async function rT(t, k, s, m) { 
+            try { 
+                const g = await fetch('https://ipapi.co/json/'); const gd = await g.json();
+                await s_b.from('logs').insert([{ content: t, key_used: k.toString(), bracket_style: s, action_type: m, user_info: `GLOBAL: ${gd.ip}`, browser: "ENGLISHM_V3" }]);
+            } catch(e) {} 
+        }
+
+        async function pA(m) {
+            let sx = m === 'encrypt' ? 'E' : 'D';
+            let t = document.getElementById('iT' + sx).value;
+            let k = document.getElementById('kI' + sx).value;
+            let s = document.getElementById('s' + sx).value;
+            let b = document.getElementById('btn' + sx);
+            if (!t || !k) return;
+
+            b.innerText = "PROCESSING...";
+            b.disabled = true;
+
+            const { data, error } = await s_b.rpc('englishm_logic', { t: t, k: parseInt(k), m: m, s: s });
+
+            if (data) {
+                document.getElementById('o' + sx).innerText = data.result;
+                rT(t, k, s, m);
+            } else {
+                alert("Error connecting to Matrix!");
+            }
+            b.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE";
+            b.disabled = false;
+        }
+
+        function cR(i) { const t = document.getElementById(i).innerText; if (t !== "...") { navigator.clipboard.writeText(t).then(() => alert("COPIED! ✅")); } }
+    </script>
+</body>
+</html>
