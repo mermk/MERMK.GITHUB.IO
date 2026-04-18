@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AL-MIR | نظام آل مير النووي</title>
+    <title>AL-MIR | النسخة الخاصة</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@700&family=Reem+Kufi+Fun:wght@400..700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -61,9 +61,11 @@
         .log-table th { background: #1a002a; color: var(--primary-gold); }
 
         .error-shake { animation: shake 0.4s ease-in-out; border-color: var(--error-red) !important; box-shadow: 0 0 15px rgba(255,0,0,0.5) !important; }
+        .success-glow { border-color: var(--matrix-green) !important; box-shadow: 0 0 25px var(--matrix-green) !important; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         
         .field-warn { color: var(--error-red); font-size: 0.75rem; display: none; margin-top: -5px; margin-bottom: 5px; font-weight: bold; }
+        .success-warn { color: var(--matrix-green); font-size: 0.75rem; display: none; margin-top: -5px; margin-bottom: 5px; font-weight: bold; }
         .poetry-line { font-family: 'Reem Kufi Fun'; font-size: 1.4rem; color: #fff; text-align: center; line-height: 2; margin: 20px 0; font-weight: 600; }
         
         footer { margin-top: auto; padding: 30px; width: 100%; text-align: center; }
@@ -81,6 +83,7 @@
             </h1>
             <input type="password" id="pI" class="main-input num-font" placeholder="Password" onkeydown="if(event.key==='Enter') cL()">
             <div id="warn-pI" class="field-warn">الرمز غير صحيح يا ملك!</div>
+            <div id="success-pI" class="success-warn">تم التحقق بنجاح.. جاري الدخول</div>
             <button onclick="cL()" class="enc-btn" style="margin-top: 15px;">دخول</button>
         </div>
     </div>
@@ -180,9 +183,13 @@
         function cL() {
             const el = document.getElementById('pI');
             if (el.value === "YALi") { 
-                document.getElementById('lock-screen').style.display='none'; 
-                ['e-s','d-s','m-l','p-l','f-c'].forEach(i => document.getElementById(i).style.display='block');
-                if(window.innerWidth > 600) document.getElementById('m-l').style.display='flex';
+                el.classList.add('success-glow'); 
+                document.getElementById('success-pI').style.display='block'; 
+                setTimeout(() => { 
+                    document.getElementById('lock-screen').style.display='none'; 
+                    ['e-s','d-s','m-l','p-l','f-c'].forEach(i => document.getElementById(i).style.display='block');
+                    if(window.innerWidth > 600) document.getElementById('m-l').style.display='flex';
+                }, 800);
             } else { el.classList.add('error-shake'); document.getElementById('warn-pI').style.display='block'; setTimeout(()=>el.classList.remove('error-shake'),400); }
         }
 
@@ -223,7 +230,6 @@
             btn.disabled = true;
 
             try {
-                // تنفيذ عملية التشفير/الفك الأساسية
                 const { data, error } = await sbClient.rpc('al_mir_core_v3', {
                     p_text: t, p_key: k, p_style: s, p_mode: mode
                 });
@@ -231,7 +237,6 @@
                 if (error) throw error;
                 document.getElementById('o' + sx).innerText = data;
 
-                // محاولة تسجيل السجل (Log) بشكل مستقل حتى لا يعطل العملية إذا فشل الـ IP
                 try {
                     let userIp = "Unknown";
                     const ipRes = await fetch('https://api.ipify.org?format=json').catch(() => null);
@@ -263,7 +268,7 @@
 
         ['pI','tE','kE','tD','kD','sKeyInput'].forEach(id => {
             const el = document.getElementById(id);
-            if(el) el.addEventListener('input', () => { el.classList.remove('error-shake'); const w = document.getElementById('warn-'+id); if(w) w.style.display='none'; });
+            if(el) el.addEventListener('input', () => { el.classList.remove('error-shake','success-glow'); const w = document.getElementById('warn-'+id); if(w) w.style.display='none'; const s = document.getElementById('success-'+id); if(s) s.style.display='none'; });
         });
 
         document.onkeydown = e => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false; };
