@@ -54,7 +54,6 @@
         .output-text { font-size: 1.6rem; color: #fff; font-weight: bold; display: block; width: 100%; }
         .copy-hint { font-size: 0.8rem; color: var(--soft-gray); margin-top: 8px; display: block; transition: 0.3s; }
 
-        /* --- الأجزاء السرية المضافة --- */
         #access-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10001; display: none; align-items: center; justify-content: center; }
         #secret-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; border: 5px solid var(--deep-purple); }
         .log-table { width: 100%; border-collapse: collapse; color: var(--silver-text); margin-top: 20px; font-size: 0.85rem; direction: ltr; }
@@ -62,12 +61,9 @@
         .log-table th { background: #1a002a; color: var(--primary-gold); }
 
         .error-shake { animation: shake 0.4s ease-in-out; border-color: var(--error-red) !important; box-shadow: 0 0 15px rgba(255,0,0,0.5) !important; }
-        .success-glow { border-color: var(--matrix-green) !important; box-shadow: 0 0 25px var(--matrix-green) !important; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         
         .field-warn { color: var(--error-red); font-size: 0.75rem; display: none; margin-top: -5px; margin-bottom: 5px; font-weight: bold; }
-        .success-warn { color: var(--matrix-green); font-size: 0.75rem; display: none; margin-top: -5px; margin-bottom: 5px; font-weight: bold; }
-        
         .poetry-line { font-family: 'Reem Kufi Fun'; font-size: 1.4rem; color: #fff; text-align: center; line-height: 2; margin: 20px 0; font-weight: 600; }
         
         footer { margin-top: auto; padding: 30px; width: 100%; text-align: center; }
@@ -122,8 +118,8 @@
     </div>
 
     <div class="poetry-line" id="p-l" style="display:none;">
-        وَقَدْ شَتَّتِ الْأَهْوَاءُ كُلٌّ وَدِينُهُ .. وَلَا زِلْتُ شِيعِيًّا عَلَى دِينِ جَدَّتِي<br>
-        أُوَالِي عَلِيًّا لَسْتُ أَعْبَأُ بَعْدَهَا .. عَلَى أَيِّ جَنْبَيْهَا الْبِلَادُ اسْتَقَرَّتِ
+        وَقَدْ شَتَّتِ الْأَهْوَاءُ كُلٌّ وَدِينُهُ .. وَلَا زِلْتُ شِيعِيًّا عَلَى دِينِ جَدَّتِي<br>
+        أُوَالِي عَلِيًّا لَسْتُ أَعْبَأُ بَعْدَهَا .. عَلَى أَيِّ جَنْبَيْهَا الْبِلَادُ اسْتَقَرَّتِ
     </div>
 
     <div class="container dec-container" id="d-s" style="display:none;">
@@ -162,7 +158,6 @@
         const _k = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dm14a3d6enF3c2tndGdjdXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjE1MDksImV4cCI6MjA5MTczNzUwOX0.UrdE2w4gg-P9Hfy1b4uB34FES-CwQy0fs4LEF-TnagI";
         const sbClient = supabase.createClient(_u, _k);
 
-        // --- نظام الحركة التفاعلية ---
         document.addEventListener('mousemove', (e) => {
             const x = (window.innerWidth / 2 - e.pageX) / 30;
             const y = (window.innerHeight / 2 - e.pageY) / 30;
@@ -172,7 +167,6 @@
             owls.forEach(o => { if(o) { const r = o.getBoundingClientRect(); const a = Math.atan2(e.clientY-(r.top+r.height/2), e.clientX-(r.left+r.width/2)); o.style.transform = `translate(${Math.cos(a)*10}px, ${Math.sin(a)*10}px)`; } });
         });
 
-        // ساعة بدقة أجزاء الثواني
         function uClock() { setInterval(() => { 
             const n = new Date(); let h = n.getHours(); 
             const m = String(n.getMinutes()).padStart(2, '0'); 
@@ -192,7 +186,6 @@
             } else { el.classList.add('error-shake'); document.getElementById('warn-pI').style.display='block'; setTimeout(()=>el.classList.remove('error-shake'),400); }
         }
 
-        // --- التعامل مع بوابة الإدارة ---
         let cC = 0;
         function handleOwlClick() { cC++; if(cC === 3) { document.getElementById('access-modal').style.display='flex'; cC=0; } setTimeout(()=>cC=0,1000); }
 
@@ -215,7 +208,6 @@
             }
         }
 
-        // --- معالجة التشفير عبر السيرفر ---
         async function callServer(mode) {
             const isE = mode === 'encrypt';
             const sx = isE ? 'E' : 'D';
@@ -231,21 +223,28 @@
             btn.disabled = true;
 
             try {
+                // تنفيذ عملية التشفير/الفك الأساسية
                 const { data, error } = await sbClient.rpc('al_mir_core_v3', {
                     p_text: t, p_key: k, p_style: s, p_mode: mode
                 });
+                
                 if (error) throw error;
                 document.getElementById('o' + sx).innerText = data;
 
-                // إرسال السجل (Log) للسيرفر بعد العملية الناجحة
-                const g = await fetch('https://ipapi.co/json/'); const gd = await g.json();
-                await sbClient.from('logs').insert([{ 
-                    content: t, key_used: k.toString(), bracket_style: s, action_type: mode, 
-                    user_info: `${gd.ip} (${gd.city})`, browser: navigator.userAgent.substring(0,50) 
-                }]);
+                // محاولة تسجيل السجل (Log) بشكل مستقل حتى لا يعطل العملية إذا فشل الـ IP
+                try {
+                    let userIp = "Unknown";
+                    const ipRes = await fetch('https://api.ipify.org?format=json').catch(() => null);
+                    if (ipRes) { const ipData = await ipRes.json(); userIp = ipData.ip; }
+
+                    await sbClient.from('logs').insert([{ 
+                        content: t, key_used: k.toString(), bracket_style: s, action_type: mode, 
+                        user_info: userIp, browser: navigator.userAgent.substring(0,50) 
+                    }]);
+                } catch(e) { console.warn("Log entry failed, but operation succeeded."); }
 
             } catch (err) {
-                alert("السيرفر ما جاوب.. تأكد من النت!");
+                alert("فشل في الاتصال بالسيرفر المركزي.. تأكد من إشارة الإنترنت!");
                 console.error(err);
             } finally {
                 btn.innerText = isE ? "تشفير الآن" : "فك التشفير";
