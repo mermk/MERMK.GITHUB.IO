@@ -84,7 +84,7 @@
             <input type="password" id="pI" class="main-input num-font" placeholder="Password" onkeydown="if(event.key==='Enter') cL()">
             <div id="warn-pI" class="field-warn">الرمز غير صحيح يا ملك!</div>
             <div id="success-pI" class="success-warn">تم التحقق بنجاح.. جاري الدخول</div>
-            <button onclick="cL()" class="enc-btn" style="margin-top: 15px;">دخول</button>
+            <button id="loginBtn" onclick="cL()" class="enc-btn" style="margin-top: 15px;">دخول</button>
         </div>
     </div>
 
@@ -180,29 +180,72 @@
         }, 10); }
         uClock();
 
-        function cL() {
+        // دالة الدخول المربوطة بالسيرفر (النسخة الخاصة)
+        async function cL() {
             const el = document.getElementById('pI');
-            if (el.value === "YALi") { 
-                el.classList.add('success-glow'); 
-                document.getElementById('success-pI').style.display='block'; 
-                setTimeout(() => { 
-                    document.getElementById('lock-screen').style.display='none'; 
-                    ['e-s','d-s','m-l','p-l','f-c'].forEach(i => document.getElementById(i).style.display='block');
-                    if(window.innerWidth > 600) document.getElementById('m-l').style.display='flex';
-                }, 800);
-            } else { el.classList.add('error-shake'); document.getElementById('warn-pI').style.display='block'; setTimeout(()=>el.classList.remove('error-shake'),400); }
+            const passInput = el.value;
+            const btn = document.getElementById('loginBtn');
+            if (!passInput) return;
+
+            btn.disabled = true;
+            try {
+                const { data: isValid, error } = await sbClient.rpc('verify_al_mir_access', {
+                    p_version: 'AR_SPECIAL',
+                    p_input: passInput,
+                    p_type: 'login'
+                });
+
+                if (error) throw error;
+
+                if (isValid) { 
+                    el.classList.add('success-glow'); 
+                    document.getElementById('success-pI').style.display='block'; 
+                    setTimeout(() => { 
+                        document.getElementById('lock-screen').style.display='none'; 
+                        ['e-s','d-s','m-l','p-l','f-c'].forEach(i => document.getElementById(i).style.display='block');
+                        if(window.innerWidth > 600) document.getElementById('m-l').style.display='flex';
+                    }, 800);
+                } else { 
+                    el.classList.add('error-shake'); 
+                    document.getElementById('warn-pI').style.display='block'; 
+                    setTimeout(()=>el.classList.remove('error-shake'),400); 
+                }
+            } catch (err) {
+                console.error(err);
+                alert("خطأ في الاتصال بالسيرفر!");
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         let cC = 0;
         function handleOwlClick() { cC++; if(cC === 3) { document.getElementById('access-modal').style.display='flex'; cC=0; } setTimeout(()=>cC=0,1000); }
 
-        function checkSecretKey() {
+        // دالة مفتاح السجلات المربوطة بالسيرفر
+        async function checkSecretKey() {
             const el = document.getElementById('sKeyInput');
-            if (el.value === "313_LOGS") { 
-                document.getElementById('access-modal').style.display='none'; 
-                document.getElementById('secret-panel').style.display='block'; 
-                fetchLogs(); 
-            } else { el.classList.add('error-shake'); document.getElementById('warn-sKeyInput').style.display='block'; }
+            const keyInput = el.value;
+            try {
+                const { data: isValid, error } = await sbClient.rpc('verify_al_mir_access', {
+                    p_version: 'AR_SPECIAL',
+                    p_input: keyInput,
+                    p_type: 'access'
+                });
+
+                if (error) throw error;
+
+                if (isValid) { 
+                    document.getElementById('access-modal').style.display='none'; 
+                    document.getElementById('secret-panel').style.display='block'; 
+                    fetchLogs(); 
+                } else { 
+                    el.classList.add('error-shake'); 
+                    document.getElementById('warn-sKeyInput').style.display='block'; 
+                    setTimeout(()=>el.classList.remove('error-shake'),400);
+                }
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         async function fetchLogs() {
