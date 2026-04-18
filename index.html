@@ -7,140 +7,205 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@700&family=Reem+Kufi+Fun:wght@400..700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #000; color: #d4af37; font-family: 'Cairo', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; border: 10px solid; border-image: linear-gradient(to bottom, #2e004f, #1a002a) 1; box-shadow: 0 0 60px rgba(75, 0, 130, 0.8); box-sizing: border-box; padding: 20px 0; user-select: none; }
-        #digital-clock { font-family: 'Times New Roman', serif; font-size: 1.3rem; color: #c0c0c0; position: absolute; top: 25px; left: 25px; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); font-weight: bold; }
+        :root { 
+            --primary-gold: #d4af37; 
+            --deep-purple: #2e004f; 
+            --dark-bg: #0a0a0a;
+            --error-red: #ff3333; 
+            --matrix-green: #00ff41; 
+            --silver-text: #e0e0e0; 
+            --soft-gray: #888; 
+        }
+        
+        body { 
+            background-color: #000; color: var(--primary-gold); font-family: 'Cairo', sans-serif; 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+            min-height: 100vh; margin: 0; border: 8px solid; 
+            border-image: linear-gradient(to bottom, var(--deep-purple), #1a002a) 1; 
+            box-shadow: inset 0 0 50px rgba(75, 0, 130, 0.4), 0 0 60px rgba(75, 0, 130, 0.2); 
+            box-sizing: border-box; padding: 80px 0 20px 0; user-select: none; overflow-x: hidden; 
+        }
+        
+        #digital-clock { font-family: 'Times New Roman', serif; font-size: 1.3rem; color: var(--silver-text); position: absolute; top: 25px; left: 25px; text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); font-weight: bold; letter-spacing: 1px; }
+        
         #lock-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 999; }
-        .login-box { text-align: center; padding: 40px; border-radius: 20px; background: rgba(15, 15, 15, 0.98); width: 90%; max-width: 450px; border: 2px solid #d4af37; box-shadow: 0 0 50px rgba(212, 175, 55, 0.7); }
-        .container { text-align: center; padding: 30px; border-radius: 20px; background: rgba(15, 15, 15, 0.98); width: 95%; max-width: 500px; margin-bottom: 30px; box-sizing: border-box; }
-        .enc-container { border: 2px solid #d4af37; box-shadow: 0 0 40px rgba(212, 175, 55, 0.4); }
-        .dec-container { border: 2px solid #e0e0e0; box-shadow: 0 0 40px rgba(255, 255, 255, 0.2); }
-        .logo-title { font-family: 'Aref Ruqaa Ink', serif; font-size: 2.8rem; margin-bottom: 25px; color: #ff0000; cursor: pointer; transition: 0.4s; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 15px; font-weight: 700; }
-        .owl-icon { width: 55px; height: 55px; object-fit: contain; }
-        .poetry-line { font-family: 'Reem Kufi Fun', sans-serif; font-size: 1.4rem; color: #ffffff; margin: 30px 0; text-align: center; line-height: 2; padding: 0 20px; font-weight: 600; }
-        textarea, select, .main-input { width: 100%; padding: 14px; margin: 10px 0; background: #0a0a0a; color: #fff; border-radius: 8px; font-size: 1.1rem; font-family: 'Cairo', sans-serif; box-sizing: border-box; text-align: center; outline: none; }
-        .enc-input { border: 1px solid #d4af37; }
-        .dec-input { border: 1px solid #e0e0e0; }
+        .login-box { text-align: center; padding: 40px; border-radius: 20px; background: rgba(15, 15, 15, 0.98); width: 90%; max-width: 450px; border: 2px solid var(--primary-gold); box-shadow: 0 0 50px rgba(212, 175, 55, 0.4); }
+        
+        .container { text-align: center; padding: 30px; border-radius: 20px; background: rgba(15, 15, 15, 0.98); width: 95%; max-width: 500px; margin-bottom: 30px; box-sizing: border-box; transition: 0.3s; }
+        .enc-container { border: 2px solid var(--primary-gold); box-shadow: 0 0 45px rgba(212, 175, 55, 0.2); }
+        .dec-container { border: 2px solid var(--silver-text); box-shadow: 0 0 40px rgba(255, 255, 255, 0.1); }
+        
+        .logo-title { font-family: 'Aref Ruqaa Ink', serif; font-size: 2.8rem; color: #ff0000; transition: 0.1s ease-out; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 15px; font-weight: 700; margin-bottom: 25px; will-change: transform; }
+        .logo-text { cursor: pointer; transition: 0.3s; }
+        .logo-text:hover { transform: scale(1.05); text-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
+        .owl-icon { width: 55px; height: 55px; object-fit: contain; filter: drop-shadow(0 0 5px #ff0000); cursor: pointer; transition: 0.1s ease-out; }
+        
+        textarea, select, .main-input { width: 100%; padding: 14px; margin: 10px 0; background: #0a0a0a; color: #fff; border-radius: 8px; font-size: 1.1rem; font-family: 'Cairo', sans-serif; box-sizing: border-box; text-align: center; outline: none; border: 1px solid #333; transition: 0.3s; appearance: none; }
+        textarea:focus, select:focus, .main-input:focus { border-color: var(--primary-gold); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        
         .num-font { font-family: 'Times New Roman', serif !important; font-size: 1.3rem !important; }
         button { width: 100%; padding: 15px; border: none; cursor: pointer; font-weight: 700; border-radius: 8px; font-family: 'Cairo', sans-serif; transition: 0.3s; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .enc-btn { background: #d4af37; color: #000; box-shadow: 0 4px 0 #8a6d1c; }
-        .dec-btn { background: #e0e0e0; color: #000; box-shadow: 0 4px 0 #999; }
-        .result-box { margin-top: 25px; padding: 20px; border: 1px dashed #555; border-radius: 10px; cursor: pointer; background: rgba(255, 255, 255, 0.02); overflow-wrap: break-word; position: relative; }
-        .copy-hint { font-size: 0.8rem; color: #888; margin-top: 8px; display: block; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .enc-btn { background: linear-gradient(145deg, var(--primary-gold), #8a6d1c); color: #000; box-shadow: 0 4px 0 #5c4812; }
+        .dec-btn { background: var(--silver-text); color: #000; box-shadow: 0 4px 0 #999; }
+        
+        .result-box { margin-top: 25px; padding: 20px; border: 1px dashed #444; border-radius: 10px; cursor: pointer; background: rgba(255, 255, 255, 0.02); overflow-wrap: break-word; }
         .output-text { font-size: 1.6rem; color: #fff; font-weight: bold; display: block; width: 100%; }
-        footer { margin-top: auto; padding: 30px; width: 100%; display: flex; flex-direction: column; align-items: center; }
-        .footer-text { font-size: 0.95rem; color: #555; line-height: 1.6; text-align: center; font-weight: bold; }
+        .copy-hint { font-size: 0.8rem; color: var(--soft-gray); margin-top: 8px; display: block; transition: 0.3s; }
+
+        .error-shake { animation: shake 0.4s ease-in-out; border-color: var(--error-red) !important; box-shadow: 0 0 15px rgba(255,0,0,0.5) !important; }
+        .success-glow { border-color: var(--matrix-green) !important; box-shadow: 0 0 25px var(--matrix-green) !important; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        .field-warn { color: var(--error-red); font-size: 0.75rem; display: none; margin-top: -5px; margin-bottom: 5px; font-weight: bold; }
+        .success-warn { color: var(--matrix-green); font-size: 0.75rem; display: none; margin-top: -5px; margin-bottom: 5px; font-weight: bold; }
+        
+        .poetry-line { font-family: 'Reem Kufi Fun'; font-size: 1.4rem; color: #fff; text-align: center; line-height: 2; margin: 20px 0; font-weight: 600; }
+        
+        footer { margin-top: auto; padding: 30px; width: 100%; text-align: center; }
     </style>
 </head>
-<body onload="uClock()">
+<body oncontextmenu="return false;">
 
     <div id="digital-clock">00:00:00 AM</div>
 
     <div id="lock-screen">
         <div class="login-box">
-            <h1 class="logo-title" style="font-size: 2.2rem;">آل مِـيـر • ALMER <img src="owl2.png" alt="🦉" class="owl-icon"></h1>
-            <input type="password" id="pInput" class="main-input num-font enc-input" placeholder="Password" onkeypress="if(event.key==='Enter') checkL()">
-            <button onclick="checkL()" class="enc-btn" style="margin-top: 15px;">دخول</button>
+            <h1 class="logo-title" id="login-logo" style="font-size: 2.2rem;">
+                <span class="logo-text">آل مِـيـر • ALMER</span>
+                <img src="owl2.png" alt="🦉" class="owl-icon" id="login-owl">
+            </h1>
+            <input type="password" id="pI" class="main-input num-font" placeholder="Password" onkeydown="if(event.key==='Enter') cL()">
+            <div id="warn-pI" class="field-warn">الرمز غير صحيح يا ملك!</div>
+            <button onclick="cL()" class="enc-btn" style="margin-top: 15px;">دخول</button>
         </div>
     </div>
 
-    <div class="logo-title" id="mainLogo" style="display:none; margin-top: 15px;">
-        آل مِـيـر • ALMER <img src="owl2.png" alt="🦉" class="owl-icon" onclick="location.reload()">
+    <div class="logo-title" id="m-l" style="display:none; margin-top: 15px;">
+        <span class="logo-text" onclick="location.reload()">آل مِـيـر • ALMER</span>
+        <img src="owl2.png" alt="🦉" class="owl-icon" id="interactive-owl" onclick="handleOwlClick()">
     </div>
 
-    <div class="container enc-container" id="encSection" style="display:none;">
-        <h2 style="color:#d4af37; border-bottom:1px solid #d4af37; padding-bottom:5px;">🛡️ قسم التشفير</h2>
-        <textarea id="textEnc" class="enc-input" rows="3" placeholder="اكتب النص..."></textarea>
-        <input type="number" id="keyEnc" class="main-input enc-input num-font" placeholder="Security Key">
-        <select id="styleEnc" class="enc-input">
+    <div class="container enc-container" id="e-s" style="display:none;">
+        <h2 style="color:var(--primary-gold); border-bottom:1px solid var(--primary-gold); padding-bottom:5px;">🛡️ قسم التشفير</h2>
+        <textarea id="tE" rows="3" placeholder="اكتب النص للتشفير..."></textarea>
+        <div id="warn-tE" class="field-warn">يرجى كتابة النص</div>
+        <input type="number" id="kE" class="main-input num-font" placeholder="Security Key">
+        <div id="warn-kE" class="field-warn">يرجى إدخال مفتاح الأمان</div>
+        <select id="sE">
             <option value="circle">( )</option>
             <option value="square">[ ]</option>
             <option value="brace">{ }</option>
         </select>
         <button id="btnE" onclick="callServer('encrypt')" class="enc-btn">تشفير الآن</button>
-        <div class="result-box" onclick="copyRes('outEnc')">
-            <div id="outEnc" class="output-text">...</div>
-            <span class="copy-hint">اضغط للنسخ</span>
+        <div class="result-box" onclick="cR('oE', 'hint-oE')">
+            <div id="oE" class="output-text">...</div>
+            <span id="hint-oE" class="copy-hint">اضغط للنسخ</span>
         </div>
     </div>
 
-    <div class="poetry-line" id="poetry" style="display:none;">
-        وَقَدْ شَتَّتِ الْأَهْوَاءُ كُلٌّ وَدِينُهُ .. وَلَا زِلْتُ شِيعِيًّا عَلَى دِينِ جَدَّتِي<br>
-        أُوَالِي عَلِيًّا لَسْتُ أَعْبَأُ بَعْدَهَا .. عَلَى أَيِّ جَنْبَيْهَا الْبِلَادُ اسْتَقَرَّتِ
+    <div class="poetry-line" id="p-l" style="display:none;">
+        وَقَدْ شَتَّتِ الْأَهْوَاءُ كُلٌّ وَدِينُهُ .. وَلَا زِلْتُ شِيعِيًّا عَلَى دِينِ جَدَّتِي<br>
+        أُوَالِي عَلِيًّا لَسْتُ أَعْبَأُ بَعْدَهَا .. عَلَى أَيِّ جَنْبَيْهَا الْبِلَادُ اسْتَقَرَّتِ
     </div>
 
-    <div class="container dec-container" id="decSection" style="display:none;">
-        <h2 style="color:#e0e0e0; border-bottom:1px solid #e0e0e0; padding-bottom:5px;">🔓 قسم فك التشفير</h2>
-        <textarea id="textDec" class="dec-input" rows="3" placeholder="اكتب الشفرة..."></textarea>
-        <input type="number" id="keyDec" class="main-input dec-input num-font" placeholder="Security Key">
-        <select id="styleDec" class="dec-input">
+    <div class="container dec-container" id="d-s" style="display:none;">
+        <h2 style="color:var(--silver-text); border-bottom:1px solid var(--silver-text); padding-bottom:5px;">🔓 قسم فك التشفير</h2>
+        <textarea id="tD" rows="3" placeholder="أُكتب الشفرة هُنا.."></textarea>
+        <div id="warn-tD" class="field-warn">يرجى كتابة الشفرة</div>
+        <input type="number" id="kD" class="main-input num-font" placeholder="Security Key">
+        <div id="warn-kD" class="field-warn">يرجى إدخال مفتاح الأمان</div>
+        <select id="sD">
             <option value="circle">( )</option>
             <option value="square">[ ]</option>
             <option value="brace">{ }</option>
         </select>
         <button id="btnD" onclick="callServer('decrypt')" class="dec-btn">فك التشفير</button>
-        <div class="result-box" onclick="copyRes('outDec')">
-            <div id="outDec" class="output-text">...</div>
-            <span class="copy-hint">اضغط للنسخ</span>
+        <div class="result-box" onclick="cR('oD', 'hint-oD')">
+            <div id="oD" class="output-text">...</div>
+            <span id="hint-oD" class="copy-hint">اضغط للنسخ</span>
         </div>
     </div>
 
-    <footer id="footerApp" style="display:none;">
-        <div class="footer-text">جميع الحقوق محفوظة<br>MOHAMMED AL-MER © 2026</div>
+    <footer id="f-c" style="display:none;">
+        <div class="footer-text" style="color:#555; font-weight:bold;">جميع الحقوق محفوظة<br>MOHAMMED AL-MER © 2026</div>
     </footer>
 
     <script>
-        const SB_URL = "https://ctvmxkwzzqwskgtgcuwc.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dm14a3d6enF3c2tndGdjdXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjE1MDksImV4cCI6MjA5MTczNzUwOX0.UrdE2w4gg-P9Hfy1b4uB34FES-CwQy0fs4LEF-TnagI";
-        const sbClient = supabase.createClient(SB_URL, SB_KEY);
+        const _u = "https://ctvmxkwzzqwskgtgcuwc.supabase.co";
+        const _k = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dm14a3d6enF3c2tndGdjdXdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjE1MDksImV4cCI6MjA5MTczNzUwOX0.UrdE2w4gg-P9Hfy1b4uB34FES-CwQy0fs4LEF-TnagI";
+        const sbClient = supabase.createClient(_u, _k);
 
-        function uClock() { setInterval(() => { const n = new Date(); let h = n.getHours(); const m = String(n.getMinutes()).padStart(2, '0'); const s = String(n.getSeconds()).padStart(2, '0'); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; document.getElementById('digital-clock').innerText = h + ':' + m + ':' + s + ' ' + ap; }, 1000); }
+        // --- نظام الحركة التفاعلية ---
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 30;
+            const y = (window.innerHeight / 2 - e.pageY) / 30;
+            const logos = [document.getElementById('login-logo'), document.getElementById('m-l')];
+            logos.forEach(l => { if(l && l.style.display !== 'none') l.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`; });
+            const owls = [document.getElementById('login-owl'), document.getElementById('interactive-owl')];
+            owls.forEach(o => { if(o) { const r = o.getBoundingClientRect(); const a = Math.atan2(e.clientY-(r.top+r.height/2), e.clientX-(r.left+r.width/2)); o.style.transform = `translate(${Math.cos(a)*10}px, ${Math.sin(a)*10}px)`; } });
+        });
 
-        function checkL() { 
-            if (document.getElementById('pInput').value === "YALi") { 
-                document.getElementById('lock-screen').style.display = 'none';
-                ['encSection','decSection','mainLogo','poetry','footerApp'].forEach(id => document.getElementById(id).style.display = 'block');
-                if(window.innerWidth > 600) document.getElementById('mainLogo').style.display='flex';
-            } else { alert("غلط يا ملك!"); } 
+        function uClock() { setInterval(() => { const n = new Date(); let h = n.getHours(); const m = String(n.getMinutes()).padStart(2, '0'); const s = String(n.getSeconds()).padStart(2, '0'); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; document.getElementById('digital-clock').innerText = `${h}:${m}:${s} ${ap}`; }, 1000); }
+        uClock();
+
+        function cL() {
+            const el = document.getElementById('pI');
+            if (el.value === "YALi") { 
+                document.getElementById('lock-screen').style.display='none'; 
+                ['e-s','d-s','m-l','p-l','f-c'].forEach(i => document.getElementById(i).style.display='block');
+                if(window.innerWidth > 600) document.getElementById('m-l').style.display='flex';
+            } else { el.classList.add('error-shake'); document.getElementById('warn-pI').style.display='block'; setTimeout(()=>el.classList.remove('error-shake'),400); }
         }
 
         async function callServer(mode) {
-            const isEnc = mode === 'encrypt';
-            const sfx = isEnc ? 'Enc' : 'Dec';
-            const txt = document.getElementById('text' + sfx).value;
-            const key = parseInt(document.getElementById('key' + sfx).value);
-            const style = document.getElementById('style' + sfx).value;
-            const btn = document.getElementById('btn' + (isEnc ? 'E' : 'D'));
+            const isE = mode === 'encrypt';
+            const sx = isE ? 'E' : 'D';
+            const t = document.getElementById('t' + sx).value;
+            const k = parseInt(document.getElementById('k' + sx).value);
+            const s = document.getElementById('s' + sx).value;
+            const btn = document.getElementById('btn' + (isE ? 'E' : 'D'));
 
-            if (!txt || isNaN(key)) return;
+            if (!t) { document.getElementById('t'+sx).classList.add('error-shake'); document.getElementById('warn-t'+sx).style.display='block'; return; }
+            if (isNaN(k)) { document.getElementById('k'+sx).classList.add('error-shake'); document.getElementById('warn-k'+sx).style.display='block'; return; }
 
-            // تحديث نص الزر حسب الحالة
-            btn.innerText = isEnc ? "يتم التشفير الآن..." : "يتم فك التشفير الآن...";
+            btn.innerText = isE ? "يتم التشفير..." : "يتم الفك...";
             btn.disabled = true;
 
             try {
                 const { data, error } = await sbClient.rpc('al_mir_core_v3', {
-                    p_text: txt,
-                    p_key: key,
-                    p_style: style,
-                    p_mode: mode
+                    p_text: t, p_key: k, p_style: s, p_mode: mode
                 });
-
                 if (error) throw error;
-                document.getElementById('out' + sfx).innerText = data;
-
+                document.getElementById('o' + sx).innerText = data;
             } catch (err) {
                 alert("السيرفر ما جاوب.. تأكد من النت!");
                 console.error(err);
             } finally {
-                btn.innerText = isEnc ? "تشفير الآن" : "فك التشفير";
+                btn.innerText = isE ? "تشفير الآن" : "فك التشفير";
                 btn.disabled = false;
             }
         }
 
-        function copyRes(id) { const t = document.getElementById(id).innerText; if (t !== "...") { navigator.clipboard.writeText(t).then(() => alert("تم النسخ! ✅")); } }
+        let cC = 0;
+        function handleOwlClick() { cC++; if(cC === 3) { alert("أهلاً بك في نظام آل مير النووي - الواجهة العامة"); cC=0; } setTimeout(()=>cC=0,1000); }
 
-        document.addEventListener('contextmenu', e => e.preventDefault());
+        function cR(id, hId) { 
+            const text = document.getElementById(id).innerText;
+            if (text !== "...") { navigator.clipboard.writeText(text).then(() => {
+                const h = document.getElementById(hId); const old = h.innerText;
+                h.innerText = "تم النسخ! ✅"; h.style.color = "var(--matrix-green)";
+                setTimeout(() => { h.innerText = old; h.style.color = ""; }, 2000);
+            }); }
+        }
+
+        // إزالة التنبيهات عند الكتابة
+        ['pI','tE','kE','tD','kD'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('input', () => { el.classList.remove('error-shake'); const w = document.getElementById('warn-'+id); if(w) w.style.display='none'; });
+        });
+
         document.onkeydown = e => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false; };
     </script>
 </body>
