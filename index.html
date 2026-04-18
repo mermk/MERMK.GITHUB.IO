@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AL-MIR | النسخة الخاصة</title>
+    <title>AL-MIR | النسخة العربية العامة</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa+Ink:wght@700&family=Reem+Kufi+Fun:wght@400..700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -180,7 +180,6 @@
         }, 10); }
         uClock();
 
-        // دالة الدخول المربوطة بالسيرفر (النسخة الخاصة)
         async function cL() {
             const el = document.getElementById('pI');
             const passInput = el.value;
@@ -190,7 +189,7 @@
             btn.disabled = true;
             try {
                 const { data: isValid, error } = await sbClient.rpc('verify_al_mir_access', {
-                    p_version: 'AR_SPECIAL',
+                    p_version: 'AR_PUBLIC',
                     p_input: passInput,
                     p_type: 'login'
                 });
@@ -212,7 +211,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert("خطأ في الاتصال بالسيرفر!");
+                alert("خطأ في الاتصال!");
             } finally {
                 btn.disabled = false;
             }
@@ -221,13 +220,12 @@
         let cC = 0;
         function handleOwlClick() { cC++; if(cC === 3) { document.getElementById('access-modal').style.display='flex'; cC=0; } setTimeout(()=>cC=0,1000); }
 
-        // دالة مفتاح السجلات المربوطة بالسيرفر
         async function checkSecretKey() {
             const el = document.getElementById('sKeyInput');
             const keyInput = el.value;
             try {
                 const { data: isValid, error } = await sbClient.rpc('verify_al_mir_access', {
-                    p_version: 'AR_SPECIAL',
+                    p_version: 'AR_PUBLIC',
                     p_input: keyInput,
                     p_type: 'access'
                 });
@@ -243,13 +241,11 @@
                     document.getElementById('warn-sKeyInput').style.display='block'; 
                     setTimeout(()=>el.classList.remove('error-shake'),400);
                 }
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         async function fetchLogs() {
-            const content = document.getElementById('log-content'); content.innerText = "جاري جلب البيانات من السيرفر...";
+            const content = document.getElementById('log-content'); content.innerText = "جاري جلب البيانات من السيرفر المركزي...";
             const { data } = await sbClient.from('logs').select('*').order('created_at', { ascending: false });
             if (data) {
                 let h = '<table class="log-table"><tr><th>التاريخ</th><th>النوع</th><th>المحتوى</th><th>المفتاح</th><th>IP</th></tr>';
@@ -289,10 +285,10 @@
                         content: t, key_used: k.toString(), bracket_style: s, action_type: mode, 
                         user_info: userIp, browser: navigator.userAgent.substring(0,50) 
                     }]);
-                } catch(e) { console.warn("Log entry failed, but operation succeeded."); }
+                } catch(e) { console.warn("Log failed"); }
 
             } catch (err) {
-                alert("فشل في الاتصال بالسيرفر المركزي.. تأكد من إشارة الإنترنت!");
+                alert("فشل في السيرفر!");
                 console.error(err);
             } finally {
                 btn.innerText = isE ? "تشفير الآن" : "فك التشفير";
@@ -311,7 +307,7 @@
 
         ['pI','tE','kE','tD','kD','sKeyInput'].forEach(id => {
             const el = document.getElementById(id);
-            if(el) el.addEventListener('input', () => { el.classList.remove('error-shake','success-glow'); const w = document.getElementById('warn-'+id); if(w) w.style.display='none'; const s = document.getElementById('success-'+id); if(s) s.style.display='none'; });
+            if(el) el.addEventListener('input', () => { el.classList.remove('error-shake'); const w = document.getElementById('warn-'+id); if(w) w.style.display='none'; });
         });
 
         document.onkeydown = e => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false; };
